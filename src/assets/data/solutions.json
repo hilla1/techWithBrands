@@ -1,0 +1,99 @@
+[
+    {
+      "icon": "FaLaptopCode",
+      "title": "Consultation Services",
+      "description": "Expert advice to help you achieve your goals and optimize your business strategies.",
+      "ctaText": "Learn More"
+    },
+    {
+      "icon": "FaMobileAlt",
+      "title": "Web Applications",
+      "description": "Custom web apps to streamline your business processes and engage your audience.",
+      "ctaText": "See Solutions"
+    },
+    {
+      "icon": "FaChartLine",
+      "title": "Mobile Apps",
+      "description": "Innovative mobile apps that provide seamless user experiences and drive growth.",
+      "ctaText": "Explore Apps"
+    },
+    {
+      "icon": "FaTasks",
+      "title": "Dashboards",
+      "description": "Interactive dashboards to monitor and analyze key metrics and performance indicators.",
+      "ctaText": "View Dashboards"
+    },
+    {
+      "icon": "FaLaptopCode",
+      "title": "Brand Development",
+      "description": "Build a strong brand identity with our comprehensive brand development services.",
+      "ctaText": "Start Branding"
+    },
+    {
+      "icon": "FaMobileAlt",
+      "title": "E-Commerce Solutions",
+      "description": "Create a powerful online store with integrated payment and inventory management.",
+      "ctaText": "Shop Solutions"
+    },
+    {
+      "icon": "FaChartLine",
+      "title": "SEO Optimization",
+      "description": "Improve your website’s visibility and ranking with our expert SEO strategies.",
+      "ctaText": "Boost SEO"
+    },
+    {
+      "icon": "FaTasks",
+      "title": "Content Creation",
+      "description": "Engaging content that resonates with your audience and drives brand loyalty.",
+      "ctaText": "Create Content"
+    },
+    {
+      "icon": "FaLaptopCode",
+      "title": "UI/UX Design",
+      "description": "Craft visually appealing and user-friendly designs that enhance user experiences.",
+      "ctaText": "Design Now"
+    },
+    {
+      "icon": "FaMobileAlt",
+      "title": "Social Media Management",
+      "description": "Manage and grow your social media presence with our comprehensive strategies.",
+      "ctaText": "Manage Social Media"
+    },
+    {
+      "icon": "FaChartLine",
+      "title": "Data Analytics",
+      "description": "Leverage data insights to drive decision-making and optimize your operations.",
+      "ctaText": "Analyze Data"
+    },
+    {
+      "icon": "FaTasks",
+      "title": "Customer Support Solutions",
+      "description": "Enhance your customer support with tailored solutions for efficient service delivery.",
+      "ctaText": "Support Solutions"
+    },
+    {
+      "icon": "FaLaptopCode",
+      "title": "API Development",
+      "description": "Create robust APIs to integrate your applications and services seamlessly.",
+      "ctaText": "Develop API"
+    },
+    {
+      "icon": "FaMobileAlt",
+      "title": "CRM Systems",
+      "description": "Implement CRM systems to manage customer relationships and improve sales processes.",
+      "ctaText": "Implement CRM"
+    },
+    {
+      "icon": "FaChartLine",
+      "title": "Cloud Solutions",
+      "description": "Adopt scalable and secure cloud solutions for your business needs.",
+      "ctaText": "Explore Cloud"
+    },
+    {
+      "icon": "FaTasks",
+      "title": "Business Automation",
+      "description": "Automate repetitive tasks to increase efficiency and reduce operational costs.",
+      "ctaText": "Automate Now"
+    }
+  ]
+  

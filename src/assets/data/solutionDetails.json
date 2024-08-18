@@ -1,0 +1,183 @@
+{
+    "solutions": [
+      {
+        "category": "Tech Solutions",
+        "items": [
+          {
+            "title": "Web Development",
+            "description": "TwB provides end-to-end web development services including designing, coding, and deploying websites tailored to your business needs. We ensure responsive design, user-friendly interfaces, and robust functionality.",
+            "images": [
+              "https://picsum.photos/1080/720?random=1",
+              "https://picsum.photos/1080/720?random=2"
+            ],
+            "cta": {
+              "text": "Learn More",
+              "href": "#web-dev"
+            }
+          },
+          {
+            "title": "Mobile Apps",
+            "description": "Our mobile app development team crafts intuitive and high-performing apps for both iOS and Android platforms, helping you reach your audience on the go with seamless user experiences.",
+            "images": [
+              "https://picsum.photos/1080/720?random=3",
+              "https://picsum.photos/1080/720?random=4"
+            ],
+            "cta": {
+              "text": "Get Started",
+              "href": "#mobile-apps"
+            }
+          },
+          {
+            "title": "Dashboards",
+            "description": "We build interactive dashboards that visualize your data effectively, allowing for better decision-making and performance tracking through custom analytics solutions.",
+            "images": [
+              "https://picsum.photos/1080/720?random=5",
+              "https://picsum.photos/1080/720?random=6"
+            ],
+            "cta": {
+              "text": "Discover More",
+              "href": "#dashboards"
+            }
+          },
+          {
+            "title": "Custom Solutions",
+            "description": "TwB develops tailored solutions to meet specific business challenges. Whether it's a unique software application or a custom integration, we deliver solutions that fit perfectly with your requirements.",
+            "images": [
+              "https://picsum.photos/1080/720?random=7",
+              "https://picsum.photos/1080/720?random=8"
+            ],
+            "cta": {
+              "text": "Contact Us",
+              "href": "#custom-solutions"
+            }
+          },
+          {
+            "title": "API Development",
+            "description": "Our API development services enable smooth integration between different systems, allowing for the secure exchange of data and extending the functionality of your existing applications.",
+            "images": [
+              "https://picsum.photos/1080/720?random=9",
+              "https://picsum.photos/1080/720?random=10"
+            ],
+            "cta": {
+              "text": "Find Out More",
+              "href": "#api-development"
+            }
+          },
+          {
+            "title": "Data Analytics",
+            "description": "We offer comprehensive data analytics services to help you understand and leverage your data for strategic decision-making, identifying trends, and gaining actionable insights.",
+            "images": [
+              "https://picsum.photos/1080/720?random=11",
+              "https://picsum.photos/1080/720?random=12"
+            ],
+            "cta": {
+              "text": "Learn More",
+              "href": "#data-analytics"
+            }
+          },
+          {
+            "title": "E-commerce Solutions",
+            "description": "TwB creates scalable e-commerce platforms that enhance your online sales capabilities, with features like secure payment processing, product management, and customer engagement tools.",
+            "images": [
+              "https://picsum.photos/1080/720?random=13",
+              "https://picsum.photos/1080/720?random=14"
+            ],
+            "cta": {
+              "text": "Explore Options",
+              "href": "#ecommerce-solutions"
+            }
+          }
+        ]
+      },
+      {
+        "category": "Brand Solutions",
+        "items": [
+          {
+            "title": "Brand Guides",
+            "description": "We develop comprehensive brand guides that define your brand’s identity, including visual elements, tone of voice, and messaging strategies to ensure consistent and effective branding.",
+            "images": [
+              "https://picsum.photos/1080/720?random=15",
+              "https://picsum.photos/1080/720?random=16"
+            ],
+            "cta": {
+              "text": "View Details",
+              "href": "#brand-guides"
+            }
+          },
+          {
+            "title": "Brand Packages",
+            "description": "Our brand packages include all the essential elements needed to establish a brand, from logos and business cards to letterheads and social media profiles.",
+            "images": [
+              "https://picsum.photos/1080/720?random=17",
+              "https://picsum.photos/1080/720?random=18"
+            ],
+            "cta": {
+              "text": "Get a Quote",
+              "href": "#brand-packages"
+            }
+          },
+          {
+            "title": "Logo Design",
+            "description": "We design unique and memorable logos that capture the essence of your brand, ensuring it stands out and resonates with your target audience.",
+            "images": [
+              "https://picsum.photos/1080/720?random=19",
+              "https://picsum.photos/1080/720?random=20"
+            ],
+            "cta": {
+              "text": "Start Designing",
+              "href": "#logo-design"
+            }
+          },
+          {
+            "title": "Marketing Materials",
+            "description": "TwB creates a range of marketing materials such as brochures, flyers, and banners to help promote your brand and engage with potential customers effectively.",
+            "images": [
+              "https://picsum.photos/1080/720?random=21",
+              "https://picsum.photos/1080/720?random=22"
+            ],
+            "cta": {
+              "text": "See Samples",
+              "href": "#marketing-materials"
+            }
+          },
+          {
+            "title": "Brand Strategy",
+            "description": "Our team develops strategic plans to build and grow your brand, including market research, positioning, and tactics to differentiate your brand from competitors.",
+            "images": [
+              "https://picsum.photos/1080/720?random=23",
+              "https://picsum.photos/1080/720?random=24"
+            ],
+            "cta": {
+              "text": "Develop Strategy",
+              "href": "#brand-strategy"
+            }
+          },
+          {
+            "title": "Corporate Identity",
+            "description": "We help you establish a strong corporate identity through consistent branding elements, including visual design, company culture, and messaging to reinforce your company’s values.",
+            "images": [
+              "https://picsum.photos/1080/720?random=25",
+              "https://picsum.photos/1080/720?random=26"
+            ],
+            "cta": {
+              "text": "Build Identity",
+              "href": "#corporate-identity"
+            }
+          },
+          {
+            "title": "Social Media Branding",
+            "description": "TwB enhances your social media presence with tailored branding strategies and content that engage your audience and strengthen your brand’s online footprint.",
+            "images": [
+              "https://picsum.photos/1080/720?random=27",
+              "https://picsum.photos/1080/720?random=28"
+            ],
+            "cta": {
+              "text": "Boost Presence",
+              "href": "#social-media-branding"
+            }
+          }
+        ]
+      }
+    ]
+  }
+  
