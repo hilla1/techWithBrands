@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Wrapper from '../reusable/Wrapper'; // Ensure this path is correct
 import BlogCard from '../reusable/BlogCard'; // Ensure this path is correct
 import PostModal from '../../components/BlogPage/PostModal'; // Ensure this path is correct
+import blogPosts from '/src/assets/data/blogPosts.json'; // Import the blog posts JSON file
 
 const Blog = () => {
   const [posts, setPosts] = useState([]);
@@ -11,10 +12,7 @@ const Blog = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Fetch the blog posts from the JSON file in the assets directory
-    fetch('/src/assets/data/blogPosts.json')
-      .then((response) => response.json())
-      .then((data) => setPosts(data.slice(0, 4))); // Show only the first 4 posts
+    setPosts(blogPosts.slice(0, 4)); // Show only the first 4 posts
   }, []);
 
   const handleReadMoreClick = (post) => {

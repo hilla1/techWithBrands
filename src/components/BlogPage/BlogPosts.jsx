@@ -4,13 +4,7 @@ import Wrapper from '../../components/reusable/Wrapper';
 import { useInView } from 'react-intersection-observer';
 import ReusableModal from '../../components/BlogPage/PostModal';
 import { debounce } from 'lodash';
-
-// Function to fetch and filter blog posts
-const fetchPosts = async (start, limit) => {
-  const response = await fetch('/src/assets/data/blogPosts.json');
-  const data = await response.json();
-  return data.slice(start, start + limit);
-};
+import blogPosts from '/src/assets/data/blogPosts.json'; // Import the JSON data
 
 const BlogPosts = () => {
   const [posts, setPosts] = useState([]);
@@ -48,7 +42,9 @@ const BlogPosts = () => {
     if (loading || !hasMore) return;
 
     setLoading(true);
-    const newPosts = await fetchPosts(posts.length, 6);
+    const start = posts.length;
+    const limit = 6;
+    const newPosts = blogPosts.slice(start, start + limit); // Load posts from the JSON data
     if (newPosts.length > 0) {
       setPosts(prevPosts => [...prevPosts, ...newPosts]);
     } else {
@@ -74,15 +70,11 @@ const BlogPosts = () => {
     setModalPost(post);
   };
 
-  // Fetch initial posts
+  // Initialize posts from the imported JSON data
   useEffect(() => {
-    const fetchInitialPosts = async () => {
-      const initialPosts = await fetchPosts(0, 6);
-      setPosts(initialPosts);
-      setDisplayedPosts(initialPosts);
-    };
-
-    fetchInitialPosts();
+    const initialPosts = blogPosts.slice(0, 6); // Load the initial posts
+    setPosts(initialPosts);
+    setDisplayedPosts(initialPosts);
   }, []);
 
   // Load more posts when user scrolls into view
