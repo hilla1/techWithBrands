@@ -3,6 +3,7 @@ import Wrapper from './Wrapper';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import axios from 'axios';
 import { FaRedditAlien, FaFacebookF, FaYoutube, FaLinkedinIn } from 'react-icons/fa';
 
 // Define the Zod schema for validation
@@ -20,19 +21,12 @@ const Contact = () => {
   // Handle form submission
   const onSubmit = async (data) => {
     try {
-      const response = await fetch('/.netlify/functions/sendEmail', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
+      const response = await axios.post('/.netlify/functions/sendEmail', data);
 
-      const result = await response.json();
-      if (response.ok) {
+      if (response.status === 200) {
         alert('Message sent successfully!');
       } else {
-        alert('Failed to send message: ' + result.message);
+        alert('Failed to send message: ' + response.data.message);
       }
 
       // Reset form
