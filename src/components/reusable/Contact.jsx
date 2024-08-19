@@ -17,12 +17,30 @@ const Contact = () => {
     resolver: zodResolver(schema),
   });
 
-  const onSubmit = (data) => {
-    // Handle form submission logic
-    console.log('Form submitted:', data);
-    // Reset form
-    reset();
+  const onSubmit = async (data) => {
+    try {
+      const response = await fetch('/.netlify/functions/sendEmail', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+  
+      const result = await response.json();
+      if (response.ok) {
+        alert('Message sent successfully!');
+      } else {
+        alert('Failed to send message: ' + result.message);
+      }
+  
+      // Reset form
+      reset();
+    } catch (error) {
+      alert('Error: ' + error.message);
+    }
   };
+  
 
   return (
     <div className="bg-gray-100">
