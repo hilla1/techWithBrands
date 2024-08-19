@@ -33,7 +33,7 @@ exports.handler = async (event, context) => {
 
   // Email options
   const mailOptions = {
-    from: email,
+    from: 'TrendwithBrands Web Contact Form',
     to: RECEIVER_EMAIL,
     subject: `Contact Form Submission from ${name}`,
     text: message,
