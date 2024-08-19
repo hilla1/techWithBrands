@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import animatedLogo from '/src/assets/animatedLogo.mp4'; // Import the video
-import loadingLogo from '/src/assets/twbFalcon.png'; // Import the logo
 
 const SplashScreen = ({ onFinish }) => {
   const videoRef = useRef(null);
@@ -22,7 +21,7 @@ const SplashScreen = ({ onFinish }) => {
   };
 
   return (
-    <div className="w-full h-screen flex items-center justify-center bg-black relative">
+    <div className="w-full h-screen flex items-center justify-center bg-black">
       <video
         ref={videoRef}
         className="w-full h-full object-cover"
@@ -36,8 +35,8 @@ const SplashScreen = ({ onFinish }) => {
         Your browser does not support the video tag.
       </video>
       {!isVideoLoaded && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <img src={loadingLogo} alt="Loading Logo" className="w-24 h-24" />
+        <div className="absolute inset-0 flex items-center justify-center text-white">
+          Loading...
         </div>
       )}
     </div>
