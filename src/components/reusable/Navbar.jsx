@@ -42,7 +42,7 @@ const Navbar = () => {
           <img
             src={isScrolled ? twbLogo1 : twbLogo}
             alt="TWB Logo"
-            className={`w-[210px] h-[30px] xl:w-[240px] xl:h-[40px] transition-all duration-300`}
+            className={`w-[200px] h-[30px] xl:w-[240px] xl:h-[40px] transition-all duration-300`}
           />
         </a>
         
