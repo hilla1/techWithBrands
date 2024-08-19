@@ -17,6 +17,7 @@ const Contact = () => {
     resolver: zodResolver(schema),
   });
 
+  // Handle form submission
   const onSubmit = async (data) => {
     try {
       const response = await fetch('/.netlify/functions/sendEmail', {
@@ -26,34 +27,38 @@ const Contact = () => {
         },
         body: JSON.stringify(data),
       });
-  
+
       const result = await response.json();
       if (response.ok) {
         alert('Message sent successfully!');
       } else {
         alert('Failed to send message: ' + result.message);
       }
-  
+
       // Reset form
       reset();
     } catch (error) {
       alert('Error: ' + error.message);
     }
   };
-  
 
   return (
     <div className="bg-gray-100">
       <Wrapper>
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-[var(--primary-color)] mb-4">Contact Us</h1>
-          <p className="text-lg text-gray-700">We'd love to hear from you! Fill out the form below or reach out to us through our contact details.</p>
+          <p className="text-lg text-gray-700">
+            We'd love to hear from you! Fill out the form below or reach out to us through our contact details.
+          </p>
         </div>
 
         <div className="flex flex-col lg:flex-row lg:space-x-12">
+          {/* Contact Form */}
           <div className="lg:w-1/2 mb-8 lg:mb-0">
             <form onSubmit={handleSubmit(onSubmit)} className="bg-white shadow-lg rounded-lg p-6 border border-gray-200">
               <h2 className="text-2xl font-semibold text-[var(--primary-color)] mb-4">Get in Touch</h2>
+              
+              {/* Name Field */}
               <div className="mb-4">
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">Name</label>
                 <input
@@ -64,6 +69,8 @@ const Contact = () => {
                 />
                 {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>}
               </div>
+              
+              {/* Email Field */}
               <div className="mb-4">
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">Email</label>
                 <input
@@ -74,6 +81,8 @@ const Contact = () => {
                 />
                 {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
               </div>
+              
+              {/* Message Field */}
               <div className="mb-4">
                 <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">Message</label>
                 <textarea
@@ -84,6 +93,7 @@ const Contact = () => {
                 ></textarea>
                 {errors.message && <p className="text-red-500 text-sm mt-1">{errors.message.message}</p>}
               </div>
+              
               <button
                 type="submit"
                 className="bg-[var(--secondary-color)] text-white px-6 py-3 rounded-lg hover:bg-[var(--primary-color)]"
@@ -93,6 +103,7 @@ const Contact = () => {
             </form>
           </div>
 
+          {/* Contact Details */}
           <div className="lg:w-1/2">
             <div className="bg-white shadow-lg rounded-lg p-6 border border-gray-200">
               <h2 className="text-2xl font-semibold text-[var(--primary-color)] mb-4">Contact Details</h2>
