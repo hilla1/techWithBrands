@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import axios from 'axios'; // Import Axios
 import { FaRedditAlien, FaFacebookF, FaYoutube, FaLinkedinIn } from 'react-icons/fa';
 
 // Define the schema for form validation with Zod
@@ -21,18 +22,16 @@ const ContactSection = () => {
 
   const onSubmit = async (data) => {
     try {
-      const response = await fetch('/.netlify/functions/sendEmail', {
-        method: 'POST',
+      const response = await axios.post('/.netlify/functions/sendEmail', data, {
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
       });
-      const result = await response.json();
-      if (response.ok) {
+
+      if (response.status === 200) {
         setMessageSent(true);
         reset(); // Clear form fields after submission
         setTimeout(() => setMessageSent(false), 5000); // Clear message sent status after 5 seconds
       } else {
-        alert('Failed to send message: ' + result.message);
+        alert('Failed to send message: ' + response.data.message);
       }
     } catch (error) {
       console.error('Error sending message:', error);
@@ -96,7 +95,7 @@ const ContactSection = () => {
             <button
               type="submit"
               className="px-6 py-3 rounded-lg shadow-lg transition-transform transform hover:scale-105"
-              style={{ backgroundColor: 'var(--primary-color)', color: 'white', hover: 'var(--secondary-color)' }}
+              style={{ backgroundColor: 'var(--primary-color)', color: 'white' }}
             >
               Send Message
             </button>
