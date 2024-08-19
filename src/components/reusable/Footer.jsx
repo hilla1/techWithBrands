@@ -2,8 +2,9 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import Wrapper from './Wrapper'; // Ensure this path is correct
-import twbLogo from '../../assets/twbLogo.png'; // Ensure this path is correct
+import { Link, useNavigate } from 'react-router-dom'; 
+import Wrapper from './Wrapper'; 
+import twbLogo from '../../assets/twbLogo.png'; 
 import { FaFacebookF, FaTwitter, FaLinkedinIn, FaInstagram } from 'react-icons/fa';
 
 // Define Zod schema for validation
@@ -21,11 +22,20 @@ const Footer = () => {
     resolver: zodResolver(subscribeSchema),
   });
 
+  // Use navigate for programmatic navigation
+  const navigate = useNavigate();
+
   // Handle form submission
   const onSubmit = (data) => {
     // Handle the valid form submission
     console.log('Form submitted with:', data);
     // Here you can add your API call or any other logic to handle the subscription
+  };
+
+  // Function to navigate to the top of the landing page
+  const goToTop = () => {
+    navigate('/'); // Navigate to the landing page
+    window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to the top smoothly
   };
 
   return (
@@ -34,7 +44,10 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 py-8">
           {/* Column 1: Logo and Description */}
           <div className="flex flex-col">
-            <img src={twbLogo} alt="TechwithBrands Logo" className="w-40 mb-4" />
+            {/* Use a button to trigger the scroll function */}
+            <button onClick={goToTop}>
+              <img src={twbLogo} alt="TechwithBrands Logo" className="w-60 mb-4" />
+            </button>
             <p className="text-lg">
               TechwithBrands is dedicated to transforming ideas into innovative solutions. We specialize in consultation, tech solutions, and branding to help businesses thrive in the digital age. Our expertise in web and mobile apps, along with effective brand strategies, ensures your success in a competitive market.
             </p>

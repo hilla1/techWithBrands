@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Wrapper from '../reusable/Wrapper'; // Ensure this path is correct
-import BlogCard from '../reusable/BlogCard'; // Ensure this path is correct
-import PostModal from '../../components/BlogPage/PostModal'; // Ensure this path is correct
-import blogPosts from '/src/assets/data/blogPosts.json'; // Import the blog posts JSON file
+import Wrapper from '../reusable/Wrapper'; 
+import BlogCard from '../reusable/BlogCard'; 
+import PostModal from '../../components/BlogPage/PostModal'; 
+import blogPosts from '/src/assets/data/blogPosts.json'; 
 
 const Blog = () => {
   const [posts, setPosts] = useState([]);
@@ -23,6 +23,11 @@ const Blog = () => {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedPost(null);
+  };
+
+  const handleNavigateToBlog = () => {
+    navigate('/blog'); // Navigate to the blog page
+    window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to the top smoothly
   };
 
   return (
@@ -49,7 +54,7 @@ const Blog = () => {
         <div className="text-center mt-12">
           <button
             className="bg-[var(--secondary-color)] text-white px-6 py-3 rounded-lg hover:bg-[var(--primary-color)]"
-            onClick={() => navigate('/blog')} // Navigate to /blog
+            onClick={handleNavigateToBlog} // Use the handler function
           >
             Read More Articles
           </button>

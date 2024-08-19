@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { useNavbar } from '../../hooks/useNavbar';
-import { navbarItems } from '../../assets/data/navbarData';
-import twbLogo from '../../assets/twbLogo.png';
-import twbLogo1 from '../../assets/twbLogo1.png';
-import { FaBars, FaTimes, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { useNavbar } from '../../hooks/useNavbar'; // Custom hook to manage navbar states like scrolling and mobile menu toggle
+import { navbarItems } from '../../assets/data/navbarData'; // Importing navbar items data
+import twbLogo from '../../assets/twbLogo.png'; // Importing main logo
+import twbLogo1 from '../../assets/twbLogo1.png'; // Importing secondary logo
+import { FaBars, FaTimes, FaChevronDown, FaChevronUp } from 'react-icons/fa'; // Importing icons from react-icons
 
 const Navbar = () => {
   // Custom hook to manage navbar states like scrolling and mobile menu toggle
@@ -37,12 +37,14 @@ const Navbar = () => {
       className={`fixed w-full top-0 left-0 z-50 transition-transform duration-300 ease-in-out ${visible ? 'translate-y-0' : '-translate-y-full'} ${navbarBgColor}`}
     >
       <div className={`flex items-center py-4 px-4 xl:mx-20 ${navbarBgColor}`}>
-        {/* Navbar logo changes based on scroll state */}
-        <img
-          src={isScrolled ? twbLogo1 : twbLogo}
-          alt="TWB Logo"
-          className={`w-[100px] h-[16px] sm:w-[120px] sm:h-[20px] md:w-[140px] md:h-[24px] lg:w-[180px] lg:h-[30px] xl:w-[240px] xl:h-[40px] transition-all duration-300`}
-        />
+        {/* Navbar logo changes based on scroll state and links to the landing page */}
+        <a href="/" className="block"> 
+          <img
+            src={isScrolled ? twbLogo1 : twbLogo}
+            alt="TWB Logo"
+            className={`w-[210px] h-[30px] xl:w-[240px] xl:h-[40px] transition-all duration-300`}
+          />
+        </a>
         
         <div className="flex-grow flex justify-center items-center mx-4">
           {/* Navbar items (links and dropdowns) */}
