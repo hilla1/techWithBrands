@@ -2,24 +2,44 @@ require('dotenv').config();
 const nodemailer = require('nodemailer');
 
 exports.handler = async (event, context) => {
-  const { name, email, message } = JSON.parse(event.body);
+  // Parse the request body
+  let { name, email, message } = {};
+  try {
+    ({ name, email, message } = JSON.parse(event.body));
+  } catch (error) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ message: 'Invalid request payload.' }),
+    };
+  }
+
+  // Validate environment variables
+  const { SMTP_USER, SMTP_PASS, RECEIVER_EMAIL } = process.env;
+  if (!SMTP_USER || !SMTP_PASS || !RECEIVER_EMAIL) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ message: 'Missing environment variables.' }),
+    };
+  }
 
   // Create a transporter object using Gmail
   const transporter = nodemailer.createTransport({
-    service: 'Gmail',
+    service: 'gmail', // 'Gmail' should be lowercase
     auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
+      user: SMTP_USER,
+      pass: SMTP_PASS,
     },
   });
 
+  // Email options
   const mailOptions = {
     from: email,
-    to: process.env.RECEIVER_EMAIL,
+    to: RECEIVER_EMAIL,
     subject: `Contact Form Submission from ${name}`,
     text: message,
   };
 
+  // Send the email
   try {
     await transporter.sendMail(mailOptions);
     return {
@@ -27,9 +47,13 @@ exports.handler = async (event, context) => {
       body: JSON.stringify({ message: 'Email sent successfully!' }),
     };
   } catch (error) {
+    console.error('Error sending email:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ message: 'Failed to send email.', error }),
+      body: JSON.stringify({
+        message: 'Failed to send email.',
+        error: error.message,
+      }),
     };
   }
 };
