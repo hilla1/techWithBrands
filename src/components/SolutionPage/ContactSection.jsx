@@ -19,13 +19,26 @@ const ContactSection = () => {
     resolver: zodResolver(schema),
   });
 
-  const onSubmit = (data) => {
-    // Simulate form submission
-    console.log(data);
-    setMessageSent(true);
-    reset(); // Clear form fields after submission
-    setTimeout(() => setMessageSent(false), 5000); // Clear message sent status after 5 seconds
-  };
+  const onSubmit = async (data) => {
+    try {
+      const response = await fetch('/.netlify/functions/sendEmail', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const result = await response.json();
+      if (response.ok) {
+        setMessageSent(true);
+        reset(); // Clear form fields after submission
+        setTimeout(() => setMessageSent(false), 5000); // Clear message sent status after 5 seconds
+      } else {
+        alert('Failed to send message: ' + result.message);
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+      alert('Failed to send message: ' + error.message);
+    }
+  };  
 
   return (
     <div className="mt-10 p-6 bg-white border rounded-lg shadow-lg">
