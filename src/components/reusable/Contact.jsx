@@ -98,9 +98,9 @@ const Contact = () => {
               
               <button
                 type="submit"
-                className="relative bg-[var(--secondary-color)] text-white px-6 py-3 rounded-lg hover:bg-[var(--primary-color)] transition-colors"
+                className="relative bg-[var(--secondary-color)] text-white px-6 py-3 rounded-lg hover:bg-[var(--primary-color)] transition-colors flex items-center justify-center"
               >
-                {loading && <ImSpinner2 className="animate-spin absolute left-1/2 transform -translate-x-1/2 top-1/2 -translate-y-1/2" size={20} />}
+                {loading && <ImSpinner2 className="animate-spin absolute inset-0 m-auto" size={20} />}
                 <span className={`transition-opacity ${loading ? 'opacity-0' : 'opacity-100'}`}>Send Message</span>
               </button>
               
