@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Wrapper from './Wrapper';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import axios from 'axios';
 import { FaRedditAlien, FaFacebookF, FaYoutube, FaLinkedinIn } from 'react-icons/fa';
+import { ImSpinner2 } from 'react-icons/im'; // Import spinner icon
 
 // Define the Zod schema for validation
 const schema = z.object({
@@ -14,25 +15,32 @@ const schema = z.object({
 });
 
 const Contact = () => {
+  const [messageSent, setMessageSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+
   const { register, handleSubmit, formState: { errors }, reset } = useForm({
     resolver: zodResolver(schema),
   });
 
   // Handle form submission
   const onSubmit = async (data) => {
+    setLoading(true); // Show spinner on submit
     try {
       const response = await axios.post('/.netlify/functions/sendEmail', data);
 
       if (response.status === 200) {
-        alert('Message sent successfully!');
+        setMessageSent(true);
       } else {
-        alert('Failed to send message: ' + response.data.message);
+        setMessageSent(false);
       }
-
+      
       // Reset form
       reset();
     } catch (error) {
-      alert('Error: ' + error.message);
+      setMessageSent(false);
+      console.error('Error sending message:', error);
+    } finally {
+      setLoading(false); // Hide spinner after processing
     }
   };
 
@@ -90,10 +98,14 @@ const Contact = () => {
               
               <button
                 type="submit"
-                className="bg-[var(--secondary-color)] text-white px-6 py-3 rounded-lg hover:bg-[var(--primary-color)]"
+                className="relative bg-[var(--secondary-color)] text-white px-6 py-3 rounded-lg hover:bg-[var(--primary-color)] transition-colors"
               >
-                Send Message
+                {loading && <ImSpinner2 className="animate-spin absolute left-1/2 transform -translate-x-1/2 top-1/2 -translate-y-1/2" size={20} />}
+                <span className={`transition-opacity ${loading ? 'opacity-0' : 'opacity-100'}`}>Send Message</span>
               </button>
+              
+              {/* Display message sent status */}
+              {messageSent && !loading && <p className="text-green-500 mt-4">Message has been sent!</p>}
             </form>
           </div>
 
