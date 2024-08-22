@@ -14,26 +14,24 @@ const markerIcon = new L.Icon({
 });
 
 const Contactmap = () => {
-  const nairobiPosition = [-1.286389, 36.817223]; // Coordinates for Nairobi
-  const techwithBrandsPosition = [-1.283333, 36.833333]; // Random coordinates near Nairobi for TechwithBrands
+  const techwithBrandsPosition = [-1.283333, 36.833333]; // Coordinates for TechwithBrands
 
   return (
-    <div className="w-full h-60 sm:h-80 md:h-96 lg:h-[32rem] xl:h-[40rem] mt-16"> {/* Add margin-top */}
+    <div className="relative mt-16 h-32 sm:h-40 md:h-48 lg:h-56 xl:h-64 z-10">
       <MapContainer
-        center={nairobiPosition}
+        center={techwithBrandsPosition}
         zoom={13}
         scrollWheelZoom={false}
-        style={{ width: '100%', height: '100%' }}
+        className="w-full h-full"
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
-        <Marker position={nairobiPosition} icon={markerIcon}>
-          <Popup>Nairobi</Popup>
-        </Marker>
         <Marker position={techwithBrandsPosition} icon={markerIcon}>
-          <Popup>TechwithBrands</Popup>
+          <Popup permanent>
+            <div>TechwithBrands</div>
+          </Popup>
         </Marker>
       </MapContainer>
     </div>

@@ -40,7 +40,7 @@ const SolutionPage = () => {
     <>
       <Navbar />
       <Wrapper>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="min-h-[300px] sm:min-h-[400px] md:min-h-[550px] lg:min-h-[650px] grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="md:col-span-1">
             <SolutionDetails solution={solution} />
           </div>

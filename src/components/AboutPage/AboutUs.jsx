@@ -62,6 +62,7 @@ const AboutUs = () => {
       </Wrapper>
 
       {/* Mission, Vision, Goals Section */}
+      <div className="bg-[#f8f4ec]">
       <Wrapper>
         <div className="flex flex-col md:flex-row justify-between space-y-8 md:space-y-0 md:space-x-6">
           {/* Mission */}
@@ -109,10 +110,11 @@ const AboutUs = () => {
           </div>
         </div>
       </Wrapper>
+      </div>
 
       {/* Why Us Section */}
+      <div className="bg-gray-50 p-6 rounded-lg shadow-lg">
       <Wrapper>
-        <div className="bg-gray-100 p-6 rounded-lg shadow-lg">
           <h2 className="text-3xl font-bold text-[var(--primary-color)] mb-6 text-center">
             Why Us
           </h2>
@@ -163,8 +165,8 @@ const AboutUs = () => {
               </ul>
             </div>
           </div>
-        </div>
       </Wrapper>
+      </div>
     </>
   );
 };

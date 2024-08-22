@@ -6,12 +6,12 @@ import Contactmap from '../components/contact/Contactmap';
 
 const ContactPage = () => {
   return (
-    <>
+    <div className="relative">
       <Navbar />
       <Contactmap /> 
       <Contact />
       <Footer />
-    </>
+      </div>
   );
 };
 
