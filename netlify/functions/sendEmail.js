@@ -3,9 +3,9 @@ const nodemailer = require('nodemailer');
 
 exports.handler = async (event, context) => {
   // Parse the request body
-  let { name, email, message } = {};
+  let { name, email, phone, message } = {};
   try {
-    ({ name, email, message } = JSON.parse(event.body));
+    ({ name, email, phone, message } = JSON.parse(event.body));
   } catch (error) {
     return {
       statusCode: 400,
@@ -24,19 +24,41 @@ exports.handler = async (event, context) => {
 
   // Create a transporter object using Gmail
   const transporter = nodemailer.createTransport({
-    service: 'gmail', // 'Gmail' should be lowercase
+    service: 'gmail',
     auth: {
       user: SMTP_USER,
       pass: SMTP_PASS,
     },
   });
 
-  // Email options
+  // Format the email content with phone number and a more polished look
   const mailOptions = {
-    from: 'TrendwithBrands Web Contact Form',
+    from: 'TrendwithBrands Web Contact Form <no-reply@trendwithbrands.com>',
     to: RECEIVER_EMAIL,
     subject: `Contact Form Submission from ${name}`,
-    text: message,
+    text: `
+      You have received a new contact form submission from your website:
+
+      Name: ${name}
+      Email: ${email}
+      Phone: ${phone}
+
+      Message:
+      ${message}
+
+      ------------------------------------------------
+      This email was sent from the TrendwithBrands website contact form.
+    `,
+    html: `
+      <p>You have received a new contact form submission from your website:</p>
+      <p><strong>Name:</strong> ${name}</p>
+      <p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
+      <p><strong>Phone:</strong> ${phone}</p>
+      <p><strong>Message:</strong></p>
+      <p>${message}</p>
+      <hr>
+      <p style="color: #888;">This email was sent from the TrendwithBrands website contact form.</p>
+    `,
   };
 
   // Send the email

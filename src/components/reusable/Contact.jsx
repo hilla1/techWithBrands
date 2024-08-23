@@ -11,6 +11,7 @@ import { ImSpinner2 } from 'react-icons/im'; // Import spinner icon
 const schema = z.object({
   name: z.string().min(1, "Name is required").max(50, "Name can't be longer than 50 characters"),
   email: z.string().min(1, "Email is required").email("Invalid email address"),
+  phone: z.string().min(1, "Phone is required").max(15, "Phone can't be longer than 15 characters"),
   message: z.string().min(1, "Message is required").max(500, "Message can't be longer than 500 characters"),
 });
 
@@ -71,17 +72,32 @@ const Contact = () => {
                 />
                 {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>}
               </div>
-              
-              {/* Email Field */}
-              <div className="mb-4">
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                <input
-                  type="email"
-                  id="email"
-                  {...register('email')}
-                  className={`w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[var(--primary-color)] ${errors.email ? 'border-red-500' : ''}`}
-                />
-                {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
+
+              {/* Phone and Email Fields */}
+              <div className="mb-4 lg:flex lg:space-x-4">
+                {/* Phone Field */}
+                <div className="lg:w-1/2 mb-4 lg:mb-0">
+                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                  <input
+                    type="text"
+                    id="phone"
+                    {...register('phone')}
+                    className={`w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[var(--primary-color)] ${errors.phone ? 'border-red-500' : ''}`}
+                  />
+                  {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone.message}</p>}
+                </div>
+
+                {/* Email Field */}
+                <div className="lg:w-1/2">
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                  <input
+                    type="email"
+                    id="email"
+                    {...register('email')}
+                    className={`w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[var(--primary-color)] ${errors.email ? 'border-red-500' : ''}`}
+                  />
+                  {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
+                </div>
               </div>
               
               {/* Message Field */}

@@ -9,6 +9,7 @@ import { ImSpinner2 } from 'react-icons/im'; // Import spinner icon
 // Define the schema for form validation with Zod
 const schema = z.object({
   name: z.string().min(1, 'Name is required'),
+  phone: z.string().min(1, 'Phone is required'),
   email: z.string().email('Invalid email address'),
   message: z.string().min(1, 'Message is required'),
 });
@@ -75,15 +76,27 @@ const ContactSection = () => {
               />
               {errors.name && <p className="text-red-500">{errors.name.message}</p>}
             </div>
-            <div className="mb-4">
-              <label className="block text-gray-700 mb-2" htmlFor="email">Email</label>
-              <input
-                type="email"
-                id="email"
-                {...register('email')}
-                className="w-full p-2 border rounded-lg"
-              />
-              {errors.email && <p className="text-red-500">{errors.email.message}</p>}
+            <div className="mb-4 flex space-x-4">
+              <div className="w-1/2">
+                <label className="block text-gray-700 mb-2" htmlFor="phone">Phone</label>
+                <input
+                  type="text"
+                  id="phone"
+                  {...register('phone')}
+                  className="w-full p-2 border rounded-lg"
+                />
+                {errors.phone && <p className="text-red-500">{errors.phone.message}</p>}
+              </div>
+              <div className="w-1/2">
+                <label className="block text-gray-700 mb-2" htmlFor="email">Email</label>
+                <input
+                  type="email"
+                  id="email"
+                  {...register('email')}
+                  className="w-full p-2 border rounded-lg"
+                />
+                {errors.email && <p className="text-red-500">{errors.email.message}</p>}
+              </div>
             </div>
             <div className="mb-4">
               <label className="block text-gray-700 mb-2" htmlFor="message">Message</label>
