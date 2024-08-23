@@ -10,24 +10,22 @@ import Testimonials from '../components/LandingPage/Testimonials';
 import Contact from '../components/reusable/Contact';
 import Footer from '../components/reusable/Footer';
 import SplashScreen from '../components/reusable/SplashScreen';
+import FadeInOnScroll from '../components/reusable/FadeInOnScroll'; // Import the new component
 
 const LandingPage = () => {
   const [isSplashScreenVisible, setIsSplashScreenVisible] = useState(false);
 
   useEffect(() => {
-    // Check if the user has already visited the site
     const hasVisited = localStorage.getItem('hasVisited');
     
     if (!hasVisited) {
-      // If the user is visiting for the first time, show the splash screen
       setIsSplashScreenVisible(true);
-      // Set a flag in localStorage to indicate the user has visited
       localStorage.setItem('hasVisited', 'true');
     }
   }, []);
 
   const handleSplashScreenFinish = () => {
-    setIsSplashScreenVisible(false); // Hide the splash screen after it finishes
+    setIsSplashScreenVisible(false);
   };
 
   return (
@@ -37,15 +35,33 @@ const LandingPage = () => {
       ) : (
         <>
           <Navbar />
-          <Hero />
-          <Features />
-          <Solutions />
-          <Process />
-          <Pricing />
-          <Blog />
-          <Testimonials />
-          <Contact />
-          <Footer />
+          <FadeInOnScroll delay={0}>
+            <Hero />
+          </FadeInOnScroll>
+          <FadeInOnScroll delay={200}>
+            <Features />
+          </FadeInOnScroll>
+          <FadeInOnScroll delay={200}>
+            <Solutions />
+          </FadeInOnScroll>
+          <FadeInOnScroll delay={200}>
+            <Process />
+          </FadeInOnScroll>
+          <FadeInOnScroll delay={200}>
+            <Pricing />
+          </FadeInOnScroll>
+          <FadeInOnScroll delay={200}>
+            <Blog />
+          </FadeInOnScroll>
+          <FadeInOnScroll delay={200}>
+            <Testimonials />
+          </FadeInOnScroll>
+          <FadeInOnScroll delay={200}>
+            <Contact />
+          </FadeInOnScroll>
+          <FadeInOnScroll delay={200}>
+            <Footer />
+          </FadeInOnScroll>
         </>
       )}
     </>

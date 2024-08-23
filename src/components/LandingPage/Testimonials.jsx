@@ -1,102 +1,137 @@
-import React, { useRef } from 'react';
-import Wrapper from '../reusable/Wrapper'; // Ensure this path is correct
-
-// Testimonial Card component
-const TestimonialCard = ({ name, title, description, link }) => {
-  return (
-    <div className="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200 transition-transform transform hover:scale-105 w-full md:w-3/4 lg:w-1/2 xl:w-1/4 mx-2 mb-4 flex-shrink-0">
-      <div className="p-4">
-        <h3 className="text-xl font-bold text-[var(--primary-color)] mb-2">{title}</h3>
-        <p className="text-gray-700 mb-4">
-          "{description}"
-        </p>
-        <p className="text-gray-500 mb-2">
-          — {name}
-        </p>
-      </div>
-    </div>
-  );
-};
+import React, { useState, useEffect, useRef } from 'react';
+import Wrapper from '../reusable/Wrapper';
+import TestimonialCard from '../reusable/TestimonialCard';
 
 const Testimonials = () => {
-  const scrollContainerRef = useRef(null);
-
-  const scroll = (direction) => {
-    if (scrollContainerRef.current) {
-      const { scrollLeft, clientWidth } = scrollContainerRef.current;
-      const scrollAmount = direction === 'left' ? scrollLeft - clientWidth : scrollLeft + clientWidth;
-      scrollContainerRef.current.scrollTo({ left: scrollAmount, behavior: 'smooth' });
-    }
-  };
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [cardWidth, setCardWidth] = useState(0);
+  const [cardsPerPage, setCardsPerPage] = useState(1); // Default to 1 card
+  const wrapperRef = useRef(null);
+  const cardMargin = 16;
 
   const testimonials = [
     {
       name: "Sarah Johnson",
       title: "Consultation Services",
       description: "TechwithBrands' consultation services transformed our business approach. Their insights and recommendations were spot-on and helped us streamline our processes effectively.",
-      link: "#consultation-services"
     },
     {
       name: "David Lee",
       title: "Tech Solutions",
       description: "The tech solutions provided by TechwithBrands were incredible. From web apps to mobile solutions, their work turned our ideas into powerful tools that really drive our business forward.",
-      link: "#tech-solutions"
     },
     {
       name: "Emma Carter",
       title: "Brand Solutions",
       description: "TechwithBrands crafted a brand guide that perfectly captured our vision. Their attention to detail and creativity helped us build a strong and cohesive brand identity.",
-      link: "#brand-solutions"
     },
     {
       name: "Michael Brown",
       title: "Client Services",
       description: "Managing our projects and payments has never been easier with TechwithBrands. Their client services are top-notch, making our interactions smooth and hassle-free.",
-      link: "#client-services"
     },
     {
       name: "Olivia Martinez",
       title: "Account Management",
       description: "The account management system from TechwithBrands is a game-changer. It allows us to handle budgets, invoices, and progress reports with ease, saving us valuable time and effort.",
-      link: "#account-management"
     }
   ];
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (wrapperRef.current) {
+        const wrapperWidth = wrapperRef.current.offsetWidth;
+
+        // Calculate cardsPerPage based on screen size
+        if (wrapperWidth < 640) {
+          setCardsPerPage(1); // 1 card on mobile
+        } else if (wrapperWidth < 1024) {
+          setCardsPerPage(2); // 2 cards on tablet
+        } else {
+          setCardsPerPage(4); // 4 cards on desktop
+        }
+
+        setCardWidth((wrapperWidth / cardsPerPage) - cardMargin);
+      }
+    };
+
+    // Initial calculation
+    handleResize();
+
+    // Recalculate on window resize
+    window.addEventListener('resize', handleResize);
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, [cardsPerPage]);
+
+  const totalCards = testimonials.length;
+  const maxIndex = Math.max(totalCards - cardsPerPage, 0);
+
+  const handlePrevClick = () => {
+    setCurrentIndex((prevIndex) => Math.max(prevIndex - 1, 0));
+  };
+
+  const handleNextClick = () => {
+    setCurrentIndex((prevIndex) => {
+      const newIndex = Math.min(prevIndex + 1, maxIndex);
+      return newIndex;
+    });
+  };
 
   return (
     <div className="bg-[#1d2356]">
       <Wrapper>
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-white mb-4">What Our Clients Say</h1>
+        <div className="text-center mb-12 px-4">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[var(--secondary-color)]">
+            What Our Clients Say
+          </h1>
         </div>
-        <div className="relative">
-          <button
-            className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-[var(--secondary-color)] text-white px-4 py-2 rounded-full shadow-md z-10"
-            onClick={() => scroll('left')}
-          >
-            &lt;
-          </button>
+        <div className="relative overflow-hidden" ref={wrapperRef}>
           <div
-            ref={scrollContainerRef}
-            className="flex overflow-hidden"
+            className="flex transition-transform duration-500"
+            style={{
+              transform: `translateX(-${currentIndex * (cardWidth + cardMargin)}px)`,
+              width: `${totalCards * (cardWidth + cardMargin)}px`,
+            }}
           >
-            <div className="flex flex-nowrap -mx-2">
-              {testimonials.map((testimonial, index) => (
+            {testimonials.map((testimonial, index) => (
+              <div
+                key={index}
+                className="flex-none"
+                style={{
+                  width: `${cardWidth}px`,
+                  marginRight: `${cardMargin}px`,
+                }}
+              >
                 <TestimonialCard
-                  key={index}
                   name={testimonial.name}
                   title={testimonial.title}
                   description={testimonial.description}
-                  link={testimonial.link}
                 />
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
+          {/* Navigation Buttons */}
           <button
-            className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-[var(--secondary-color)] text-white px-4 py-2 rounded-full shadow-md z-10"
-            onClick={() => scroll('right')}
+            onClick={handlePrevClick}
+            className="absolute top-1/2 left-0 transform -translate-y-1/2 px-4 py-2 bg-[rgba(248,159,45,0.6)] text-[#1d2356] rounded-full shadow-lg border-[#1d2356] hover:bg-[rgba(248,159,45,0.8)] hover:text-white transition-colors duration-300"
+          >
+            &lt;
+          </button>
+          <button
+            onClick={handleNextClick}
+            className="absolute top-1/2 right-0 transform -translate-y-1/2 px-4 py-2 bg-[rgba(248,159,45,0.6)] text-[#1d2356] rounded-full shadow-lg border-[#1d2356] hover:bg-[rgba(248,159,45,0.8)] hover:text-white transition-colors duration-300"
           >
             &gt;
           </button>
+        </div>
+        <div className="text-center mt-8">
+          <a
+            href="/testimonials"
+            className="bg-[var(--secondary-color)] text-white py-2 px-6 rounded-lg hover:bg-[var(--primary-color)]"
+          >
+            See All Testimonials
+          </a>
         </div>
       </Wrapper>
     </div>
