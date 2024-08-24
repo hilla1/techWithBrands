@@ -33,7 +33,7 @@ exports.handler = async (event, context) => {
 
   // Format the email content with phone number and a more polished look
   const mailOptions = {
-    from: 'TrendwithBrands Web Contact Form <no-reply@trendwithbrands.com>',
+    from: 'TechwithBrands Web Contact Form <no-reply@techwithbrands.com>',
     to: RECEIVER_EMAIL,
     subject: `Contact Form Submission from ${name}`,
     text: `
@@ -57,7 +57,7 @@ exports.handler = async (event, context) => {
       <p><strong>Message:</strong></p>
       <p>${message}</p>
       <hr>
-      <p style="color: #888;">This email was sent from the TrendwithBrands website contact form.</p>
+      <p style="color: #888;">This email was sent from the TechwithBrands website contact form.</p>
     `,
   };
 
