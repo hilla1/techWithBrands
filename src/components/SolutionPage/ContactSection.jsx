@@ -133,7 +133,7 @@ const ContactSection = () => {
             <a href="https://web.facebook.com/TwBonFB" target="_blank" rel="noopener noreferrer" className="text-gray-700 hover:text-[#2E3191]">
               <FaFacebookF size={24} />
             </a>
-            <a href="https://www.youtube.com/c/techwithbrands" target="_blank" rel="noopener noreferrer" className="text-gray-700 hover:text-[#2E3191]">
+            <a href="https://www.youtube.com/@TechwithBrands" target="_blank" rel="noopener noreferrer" className="text-gray-700 hover:text-[#2E3191]">
               <FaYoutube size={24} />
             </a>
             <a href="https://www.linkedin.com/company/techwithbrands/mycompany/" target="_blank" rel="noopener noreferrer" className="text-gray-700 hover:text-[#2E3191]">

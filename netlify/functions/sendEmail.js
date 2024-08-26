@@ -37,7 +37,7 @@ exports.handler = async (event, context) => {
     to: RECEIVER_EMAIL,
     subject: `Contact Form Submission from ${name}`,
     text: `
-      You have received a new contact form submission from your website:
+      You have received a new contact form submission from TechwithBrands:
 
       Name: ${name}
       Email: ${email}

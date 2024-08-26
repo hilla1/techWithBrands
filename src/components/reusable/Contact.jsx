@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import axios from 'axios';
 import { FaRedditAlien, FaFacebookF, FaYoutube, FaLinkedinIn } from 'react-icons/fa';
-import { ImSpinner2 } from 'react-icons/im'; // Import spinner icon
+import { ImSpinner2 } from 'react-icons/im'; 
 
 // Define the Zod schema for validation
 const schema = z.object({
@@ -151,7 +151,7 @@ const Contact = () => {
                 <a href="https://web.facebook.com/TwBonFB" target="_blank" rel="noopener noreferrer" className="text-gray-700 hover:text-[var(--primary-color)]">
                   <FaFacebookF size={24} />
                 </a>
-                <a href="https://www.youtube.com/c/techwithbrands" target="_blank" rel="noopener noreferrer" className="text-gray-700 hover:text-[var(--primary-color)]">
+                <a href="https://www.youtube.com/@TechwithBrands" target="_blank" rel="noopener noreferrer" className="text-gray-700 hover:text-[var(--primary-color)]">
                   <FaYoutube size={24} />
                 </a>
                 <a href="https://www.linkedin.com/company/techwithbrands/mycompany/" target="_blank" rel="noopener noreferrer" className="text-gray-700 hover:text-[var(--primary-color)]">
