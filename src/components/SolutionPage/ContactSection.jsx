@@ -4,7 +4,8 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios'; // Import Axios
 import { FaRedditAlien, FaFacebookF, FaYoutube, FaLinkedinIn } from 'react-icons/fa';
-import { ImSpinner2 } from 'react-icons/im'; // Import spinner icon
+import { ImSpinner2 } from 'react-icons/im';
+import useApiRequest from '../../hooks/useApiRequest';
 
 // Define the schema for form validation with Zod
 const schema = z.object({
@@ -22,24 +23,36 @@ const ContactSection = () => {
   const { register, handleSubmit, formState: { errors }, reset } = useForm({
     resolver: zodResolver(schema),
   });
+  const { makeRequest } = useApiRequest(); // Initialize useApiRequest
 
   const onSubmit = async (data) => {
     setLoading(true); // Show spinner on submit
     try {
-      const response = await axios.post('/.netlify/functions/sendEmail', data, {
-        headers: { 'Content-Type': 'application/json' },
-      });
-
-      if (response.status === 200) {
+      // Attempt to send data to the backend
+      const backendResponse = await makeRequest('/contact', 'POST', data);
+      
+      if (backendResponse.status === 200) {
         setMessageSent(true);
-        reset(); // Clear form fields after submission
-        setTimeout(() => setMessageSent(false), 5000); // Clear message sent status after 5 seconds
+    
+        // Send to Netlify in the background without waiting for the response
+        axios.post('/.netlify/functions/sendEmail', data).catch(err => {
+          console.error('Netlify request failed:', err); // Optionally log Netlify errors
+        });
       } else {
-        setMessageSent(false); // Handle failed submission silently
+        // Attempt to send to Netlify if the backend fails
+        const netlifyResponse = await axios.post('/.netlify/functions/sendEmail', data);
+        if (netlifyResponse.status === 200) {
+           setMessageSent(true);
+        } else {
+          setMessageSent(false);
+        }
       }
+    
+      // Reset form
+      reset();
     } catch (error) {
-      setMessageSent(false); // Handle error silently
       console.error('Error sending message:', error);
+      setMessageSent(false);
     } finally {
       setLoading(false); // Hide spinner after processing
     }
@@ -63,7 +76,6 @@ const ContactSection = () => {
       </div>
       {showContactForm ? (
         <div className="mt-4">
-          {messageSent && !loading && <p className="text-green-500 mb-4">Message has been sent!</p>}
           <h2 className="text-xl font-bold mb-4">Contact Us</h2>
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="mb-4">
@@ -107,6 +119,7 @@ const ContactSection = () => {
                 rows="4"
               ></textarea>
               {errors.message && <p className="text-red-500">{errors.message.message}</p>}
+              {messageSent && !loading && <p className="text-green-500 mb-4">Message has been sent!</p>}
             </div>
             <button
               type="submit"

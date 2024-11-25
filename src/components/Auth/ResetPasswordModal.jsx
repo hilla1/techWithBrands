@@ -36,7 +36,7 @@ const ResetPasswordModal = ({ isOpen, onClose }) => {
 
   return (
     <ReusableModal isOpen={isOpen} onClose={handleModalClose}>
-      <div className="p-6">
+      <div className="p-2">
         {/* Modal Title */}
         <h2 className="text-2xl font-bold text-center mb-4">Reset Password</h2>
 

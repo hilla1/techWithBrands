@@ -1,72 +1,70 @@
 import React from 'react';
-import Wrapper from '../reusable/Wrapper'; // Ensure this path is correct
-
-// Card component to display each pricing plan
-const PricingCard = ({ plan, price, features }) => (
-  <div className="bg-white shadow-lg rounded-lg p-6 w-full sm:w-80 mx-4 mb-6 border border-gray-200 transition-transform transform hover:scale-105 hover:bg-[#e0d4c1] hover:text-white">
-    <h3 className="text-2xl font-bold mb-4 text-center text-[var(--primary-color)]">{plan}</h3>
-    <p className="text-3xl font-semibold mb-4 text-center text-[var(--primary-color)]">${price}</p>
-    <ul className="list-disc list-inside text-gray-700 mb-6">
-      {features.map((feature, index) => (
-        <li key={index} className="mb-2">{feature}</li>
-      ))}
-    </ul>
-    <button className="bg-[var(--secondary-color)] text-white px-4 py-2 rounded-lg hover:bg-[var(--primary-color)] w-full">
-      Start now
-    </button>
-  </div>
-);
+import Wrapper from '../reusable/Wrapper'; 
+import pricingImage from '../../assets/pricing.png'; 
 
 const Pricing = () => {
-  const pricingPlans = [
-    {
-      plan: "Starter",
-      price: "50",
-      features: [
-        "Rapid Results",
-        "Standard Report",
-        "Market Analysis"
-      ]
-    },
-    {
-      plan: "Pro",
-      price: "180",
-      features: [
-        "Everything starter plus",
-        "Extended Report",
-        "Design Solutions",
-        "Strategy Proposal"
-      ]
-    },
-    {
-      plan: "Corporate",
-      price: "390",
-      features: [
-        "Pro on steroids",
-        "Detailed Report",
-        "Trainable Models",
-        "On-site Visit"
-      ]
-    }
-  ];
-
   return (
     <div className="bg-[#1d2356]">
       <Wrapper>
+        {/* Title with orange underline */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4 text-white">Our Pricing Plan</h1>
+          <h1 
+            className="text-4xl font-bold text-orange-400 mb-4 relative"
+            style={{
+              display: 'inline-block',
+              paddingBottom: '0.5rem',
+              borderBottom: '4px solid #f97316',  // Orange underline
+            }}
+          >
+            Our Pricing
+          </h1>
         </div>
-        <div className="flex flex-wrap justify-center">
-          {pricingPlans.map((plan, index) => (
-            <PricingCard
-              key={index}
-              plan={plan.plan}
-              price={plan.price}
-              features={plan.features}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+          {/* Left Column: Image with bounce animation */}
+          <div className="flex justify-center">
+            <img 
+              src={pricingImage} 
+              alt="Pricing illustration" 
+              className="w-full max-w-md"
+              style={{
+                animation: 'bounce 3s infinite',
+                transformOrigin: 'center',
+              }}
             />
-          ))}
+          </div>
+
+          {/* Right Column: Text */}
+          <div className="text-white space-y-6">
+            <h1 className="text-4xl font-bold text-white">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-white">TwB</span> is the Best Custom IT Solution Provider
+            </h1>
+            <p className="text-lg text-orange-400">
+              At <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-orange-400">TwB</span>, we understand that every business is unique. Our pricing plans are flexible to accommodate businesses of all sizes, ensuring that you get the best value for your investment.
+            </p>
+            <p className="text-lg text-white">
+              Whether you're a startup looking for rapid solutions or a corporate enterprise in need of complex IT strategies, we have the perfect plan for you. Our team works closely with you to turn your ideas into cutting-edge IT solutions.
+            </p>
+            <p className="text-lg text-orange-400">
+              Let us help you streamline your operations, enhance your digital presence, and stay ahead of the competition with our comprehensive IT services. Choose <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-orange-400">TwB</span>, where your success is our priority.
+            </p>
+          </div>
         </div>
       </Wrapper>
+
+      {/* Inline Styles for Keyframes */}
+      <style>{`
+        @keyframes bounce {
+          0%, 100% {
+            transform: translateY(0);
+            animation-timing-function: ease-in;
+          }
+          50% {
+            transform: translateY(-20px);
+            animation-timing-function: ease-out;
+          }
+        }
+      `}</style>
     </div>
   );
 };

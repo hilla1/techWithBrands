@@ -1,107 +1,114 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import Wrapper from '../reusable/Wrapper';
 import TestimonialCard from '../reusable/TestimonialCard';
+import ReusableModal from '../reusable/ReusableModal';
+import Spinner from '../reusable/Spinner';
+import useApiRequest from '../../hooks/useApiRequest';
 
 const Testimonials = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [cardWidth, setCardWidth] = useState(0);
-  const [cardsPerPage, setCardsPerPage] = useState(1); // Default to 1 card
-  const wrapperRef = useRef(null);
-  const cardMargin = 16;
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [visibleTestimonials, setVisibleTestimonials] = useState([]);
+  const cardGap = 16; // Gap between cards (in pixels)
 
-  const testimonials = [
-    {
-      name: "Sarah Johnson",
-      title: "Consultation Services",
-      description: "TechwithBrands' consultation services transformed our business approach. Their insights and recommendations were spot-on and helped us streamline our processes effectively.",
-    },
-    {
-      name: "David Lee",
-      title: "Tech Solutions",
-      description: "The tech solutions provided by TechwithBrands were incredible. From web apps to mobile solutions, their work turned our ideas into powerful tools that really drive our business forward.",
-    },
-    {
-      name: "Emma Carter",
-      title: "Brand Solutions",
-      description: "TechwithBrands crafted a brand guide that perfectly captured our vision. Their attention to detail and creativity helped us build a strong and cohesive brand identity.",
-    },
-    {
-      name: "Michael Brown",
-      title: "Client Services",
-      description: "Managing our projects and payments has never been easier with TechwithBrands. Their client services are top-notch, making our interactions smooth and hassle-free.",
-    },
-    {
-      name: "Olivia Martinez",
-      title: "Account Management",
-      description: "The account management system from TechwithBrands is a game-changer. It allows us to handle budgets, invoices, and progress reports with ease, saving us valuable time and effort.",
-    }
-  ];
+  // API Request Hook
+  const { data: testimonials, loading, error, makeRequest } = useApiRequest();
 
+  // Fetch testimonials from API on component mount
+  useEffect(() => {
+    makeRequest('/testimonials'); // Adjust the endpoint to your actual API URL
+  }, [makeRequest]);
+
+  const totalCards = testimonials ? testimonials.length : 0;
+
+  // Determine number of cards per view based on screen width
+  const getCardsPerPage = () => {
+    const width = window.innerWidth;
+    if (width < 640) return 1; // Mobile (less than 640px)
+    if (width < 1024) return 2; // Tablet (640px to 1023px)
+    return 4; // Desktop (1024px and above)
+  };
+
+  const [cardsPerPage, setCardsPerPage] = useState(getCardsPerPage());
+
+  // Update cardsPerPage on window resize
   useEffect(() => {
     const handleResize = () => {
-      if (wrapperRef.current) {
-        const wrapperWidth = wrapperRef.current.offsetWidth;
-
-        // Calculate cardsPerPage based on screen size
-        if (wrapperWidth < 640) {
-          setCardsPerPage(1); // 1 card on mobile
-        } else if (wrapperWidth < 1024) {
-          setCardsPerPage(2); // 2 cards on tablet
-        } else {
-          setCardsPerPage(4); // 4 cards on desktop
-        }
-
-        setCardWidth((wrapperWidth / cardsPerPage) - cardMargin);
-      }
+      setCardsPerPage(getCardsPerPage());
+      setCurrentIndex(0); // Reset to first card on resize
     };
 
-    // Initial calculation
-    handleResize();
-
-    // Recalculate on window resize
     window.addEventListener('resize', handleResize);
-
     return () => window.removeEventListener('resize', handleResize);
-  }, [cardsPerPage]);
+  }, []);
 
-  const totalCards = testimonials.length;
-  const maxIndex = Math.max(totalCards - cardsPerPage, 0);
+  // Update the visible testimonials based on the current index and number of cards per page
+  useEffect(() => {
+    if (testimonials) {
+      setVisibleTestimonials(testimonials.slice(currentIndex, currentIndex + cardsPerPage));
+    }
+  }, [testimonials, currentIndex, cardsPerPage]);
 
   const handlePrevClick = () => {
-    setCurrentIndex((prevIndex) => Math.max(prevIndex - 1, 0));
+    if (currentIndex > 0) {
+      setCurrentIndex((prevIndex) => Math.max(prevIndex - cardsPerPage, 0));
+    }
   };
 
   const handleNextClick = () => {
-    setCurrentIndex((prevIndex) => {
-      const newIndex = Math.min(prevIndex + 1, maxIndex);
-      return newIndex;
-    });
+    if (currentIndex + cardsPerPage < totalCards) {
+      setCurrentIndex((prevIndex) => Math.min(prevIndex + cardsPerPage, totalCards - cardsPerPage));
+    }
   };
 
+  const handleModalOpen = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+  };
+
+  // Show Spinner while loading
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Spinner size="large" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center text-red-600">
+        <p>Error loading testimonials: {error}</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-[#1d2356]">
+    <div className="bg-[#1d2356] py-12">
       <Wrapper>
+        {/* Title */}
         <div className="text-center mb-12 px-4">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[var(--secondary-color)]">
             What Our Clients Say
           </h1>
         </div>
-        <div className="relative overflow-hidden" ref={wrapperRef}>
+
+        {/* Slider */}
+        <div className="relative overflow-hidden">
           <div
-            className="flex transition-transform duration-500"
+            className="grid gap-4"
             style={{
-              transform: `translateX(-${currentIndex * (cardWidth + cardMargin)}px)`,
-              width: `${totalCards * (cardWidth + cardMargin)}px`,
+              gridTemplateColumns: `repeat(${cardsPerPage}, minmax(0, 1fr))`,
             }}
           >
-            {testimonials.map((testimonial, index) => (
+            {visibleTestimonials.map((testimonial, index) => (
               <div
                 key={index}
-                className="flex-none"
-                style={{
-                  width: `${cardWidth}px`,
-                  marginRight: `${cardMargin}px`,
-                }}
+                className="flex-none w-full px-2"
+                style={{ marginRight: `${index < totalCards - 1 ? cardGap : 0}px` }}
               >
                 <TestimonialCard
                   name={testimonial.name}
@@ -111,29 +118,64 @@ const Testimonials = () => {
               </div>
             ))}
           </div>
+
           {/* Navigation Buttons */}
-          <button
-            onClick={handlePrevClick}
-            className="absolute top-1/2 left-0 transform -translate-y-1/2 px-4 py-2 bg-[rgba(248,159,45,0.6)] text-[#1d2356] rounded-full shadow-lg border-[#1d2356] hover:bg-[rgba(248,159,45,0.8)] hover:text-white transition-colors duration-300"
-          >
-            &lt;
-          </button>
-          <button
-            onClick={handleNextClick}
-            className="absolute top-1/2 right-0 transform -translate-y-1/2 px-4 py-2 bg-[rgba(248,159,45,0.6)] text-[#1d2356] rounded-full shadow-lg border-[#1d2356] hover:bg-[rgba(248,159,45,0.8)] hover:text-white transition-colors duration-300"
-          >
-            &gt;
-          </button>
+          {totalCards > cardsPerPage && (
+            <>
+              <button
+                onClick={handlePrevClick}
+                className={`absolute top-1/2 left-2 transform -translate-y-1/2 px-4 py-2 bg-[rgba(248,159,45,0.6)] text-[#1d2356] rounded-full shadow-lg border-[#1d2356] hover:bg-[rgba(248,159,45,0.8)] hover:text-white transition-colors duration-300 z-10 ${
+                  currentIndex === 0 ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+                disabled={currentIndex === 0}
+                aria-label="Previous Testimonials"
+              >
+                &lt;
+              </button>
+              <button
+                onClick={handleNextClick}
+                className={`absolute top-1/2 right-2 transform -translate-y-1/2 px-4 py-2 bg-[rgba(248,159,45,0.6)] text-[#1d2356] rounded-full shadow-lg border-[#1d2356] hover:bg-[rgba(248,159,45,0.8)] hover:text-white transition-colors duration-300 z-10 ${
+                  currentIndex + cardsPerPage >= totalCards
+                    ? 'opacity-50 cursor-not-allowed'
+                    : ''
+                }`}
+                disabled={currentIndex + cardsPerPage >= totalCards}
+                aria-label="Next Testimonials"
+              >
+                &gt;
+              </button>
+            </>
+          )}
         </div>
+
+        {/* See All Testimonials Button */}
         <div className="text-center mt-8">
-          <a
-            href="/testimonials"
-            className="bg-[var(--secondary-color)] text-white py-2 px-6 rounded-lg hover:bg-[var(--primary-color)]"
+          <button
+            onClick={handleModalOpen}
+            className="bg-[var(--secondary-color)] text-white py-2 px-6 rounded-lg hover:bg-[var(--primary-color)] transition-colors duration-300"
           >
             See All Testimonials
-          </a>
+          </button>
         </div>
       </Wrapper>
+
+      {/* Modal for displaying all testimonials */}
+      <ReusableModal isOpen={isModalOpen} onClose={handleModalClose}>
+        <div className="p-4">
+          <h2 className="text-2xl font-bold mb-4">All Testimonials</h2>
+          <div className="space-y-4">
+            {testimonials &&
+              testimonials.map((testimonial, index) => (
+                <TestimonialCard
+                  key={index}
+                  name={testimonial.name}
+                  title={testimonial.title}
+                  description={testimonial.description}
+                />
+              ))}
+          </div>
+        </div>
+      </ReusableModal>
     </div>
   );
 };

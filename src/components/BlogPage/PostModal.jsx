@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FacebookShareButton, TwitterShareButton, LinkedinShareButton } from 'react-share';
-import { FaFacebook, FaTwitter, FaLinkedin } from 'react-icons/fa'; // Import icons
+import { FaFacebook, FaTwitter, FaLinkedin } from 'react-icons/fa'; 
 
 const commentSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -103,7 +103,7 @@ const PostModal = ({ isOpen, onClose, post }) => {
             <h2 className="text-2xl font-bold mb-4 text-[var(--primary-color)]">{post.title}</h2>
             <img src={post.image} alt={post.title} className="w-full h-64 object-cover mb-4 rounded-lg" />
             <p className="mb-4 text-gray-800">{post.description}</p>
-            <p className="mb-4 text-gray-600">By {post.author} on {post.date}</p>
+            <p className="mb-4 text-gray-600">By {post.author} on {new Date(post.createdAt).toLocaleDateString()}</p>
             
             <div className="flex items-center mb-4">
               <button

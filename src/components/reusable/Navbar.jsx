@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useNavbar } from '../../hooks/useNavbar';
 import { navbarItems } from '../../assets/data/navbarData';
 import twbLogo from '../../assets/twbLogo.png';
@@ -6,8 +7,11 @@ import twbLogo1 from '../../assets/twbLogo1.png';
 import { FaBars, FaTimes, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import LoginModal from '../../components/Auth/LoginModal'; 
 import RegisterModal from '../../components/Auth/RegisterModal'; 
+import Cookies from 'js-cookie';
 
-const Navbar = () => {
+const Navbar = () => { 
+  const navigate = useNavigate(); 
+  useEffect(() => {Cookies.get('twb') === 'session' && navigate('/settings'); }, [navigate]);
   const { isMobileMenuOpen, toggleMobileMenu, isScrolled, visible } = useNavbar();
   const [openDropdown, setOpenDropdown] = useState(null);
   const [activeSubmenu, setActiveSubmenu] = useState(null);

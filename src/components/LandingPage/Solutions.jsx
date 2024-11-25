@@ -1,16 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Wrapper from '../reusable/Wrapper';
-import Card from '../reusable/Card';
-import solutionsData from '../../assets/data/solutions.json';
+import SolutionCard from '../Solutions/SolutionCard';
+import useApiRequest from '../../hooks/useApiRequest';
 import bgSolutions from '../../assets/bgSolutions.jpg';
-import { FaLightbulb, FaCog, FaLaptopCode, FaMobileAlt, FaChartLine, FaTasks } from 'react-icons/fa';
-
-const iconMap = {
-  FaLaptopCode: FaLaptopCode,
-  FaMobileAlt: FaMobileAlt,
-  FaChartLine: FaChartLine,
-  FaTasks: FaTasks,
-};
+import { FaLightbulb, FaCog } from 'react-icons/fa';
+import Spinner from '../reusable/Spinner'; 
 
 const Solutions = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -19,7 +13,25 @@ const Solutions = () => {
   const [cardsPerPage, setCardsPerPage] = useState(4); // Default number of cards per page
   const cardMargin = 16; // Adjust for margin (8px each side)
 
+  const { makeRequest } = useApiRequest(); // Use custom hook to fetch data
+  const [solutions, setSolutions] = useState([]); // Store fetched solutions
+  const [loading, setLoading] = useState(true); // Loading state
+
+  // Fetch solutions from the backend
+  const fetchSolutions = async () => {
+    try {
+      const fetchedSolutions = await makeRequest('/solutions'); // Replace with your backend API endpoint
+      setSolutions(fetchedSolutions);
+    } catch (error) {
+      console.error('Error fetching solutions:', error);
+    } finally {
+      setLoading(false); // Stop loading spinner after data is fetched
+    }
+  };
+
   useEffect(() => {
+    fetchSolutions(); // Fetch solutions when the component mounts
+
     const handleResize = () => {
       if (wrapperRef.current) {
         const wrapperWidth = wrapperRef.current.offsetWidth;
@@ -48,7 +60,7 @@ const Solutions = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, [cardsPerPage]);
 
-  const totalCards = solutionsData.length;
+  const totalCards = solutions.length;
   const maxIndex = totalCards - cardsPerPage;
 
   const handlePrevClick = () => {
@@ -87,18 +99,21 @@ const Solutions = () => {
               />
             </h1>
           </div>
-          <div className="relative overflow-hidden">
-            <div
-              className="flex justify-center"
-              style={{
-                transform: `translateX(-${currentIndex * (cardWidth + cardMargin)}px)`,
-                transition: 'transform 0.5s ease-in-out',
-                width: `${totalCards * (cardWidth + cardMargin)}px`,
-              }}
-            >
-              {solutionsData.map((card, index) => {
-                const IconComponent = iconMap[card.icon];
-                return (
+          
+          {/* Show Spinner while loading */}
+          {loading ? (
+            <Spinner size="large" />
+          ) : (
+            <div className="relative overflow-hidden">
+              <div
+                className="flex justify-center"
+                style={{
+                  transform: `translateX(-${currentIndex * (cardWidth + cardMargin)}px)`,
+                  transition: 'transform 0.5s ease-in-out',
+                  width: `${totalCards * (cardWidth + cardMargin)}px`,
+                }}
+              >
+                {solutions.map((solution, index) => (
                   <div
                     key={index}
                     className="flex-none mx-2"
@@ -106,38 +121,43 @@ const Solutions = () => {
                       width: `${cardWidth}px`,
                     }}
                   >
-                    <Card
-                      icon={IconComponent}
-                      title={card.title}
-                      description={card.description}
-                      ctaText={card.ctaText}
+                    <SolutionCard
+                      key={solution._id}
+                      images={solution.images}
+                      title={solution.title}
+                      description={solution.description}
+                      cta={solution.cta}
+                      onSelect={() => {}}
+                      isSelected={false}
                     />
                   </div>
-                );
-              })}
+                ))}
+              </div>
+
+              {/* Navigation Buttons */}
+              <div className="absolute top-1/2 left-0 transform -translate-y-1/2 px-2 sm:px-4">
+                <button
+                  onClick={handlePrevClick}
+                  className="bg-[var(--primary-color)] text-white hover:bg-[var(--secondary-color)] focus:outline-none text-xl sm:text-2xl md:text-3xl p-2 sm:p-3 rounded-full shadow-lg opacity-50 hover:opacity-80 transition-opacity duration-300"
+                >
+                  &lt;
+                </button>
+              </div>
+              <div className="absolute top-1/2 right-0 transform -translate-y-1/2 px-2 sm:px-4">
+                <button
+                  onClick={handleNextClick}
+                  className="bg-[var(--primary-color)] text-white hover:bg-[var(--secondary-color)] focus:outline-none text-xl sm:text-2xl md:text-3xl p-2 sm:p-3 rounded-full shadow-lg opacity-50 hover:opacity-80 transition-opacity duration-300"
+                >
+                  &gt;
+                </button>
+              </div>
             </div>
-            {/* Navigation Buttons */}
-            <div className="absolute top-1/2 left-0 transform -translate-y-1/2 px-2 sm:px-4">
-              <button
-                onClick={handlePrevClick}
-                className="bg-[var(--primary-color)] text-white hover:bg-[var(--secondary-color)] focus:outline-none text-xl sm:text-2xl md:text-3xl p-2 sm:p-3 rounded-full shadow-lg opacity-50 hover:opacity-80 transition-opacity duration-300"
-              >
-                &lt;
-              </button>
-            </div>
-            <div className="absolute top-1/2 right-0 transform -translate-y-1/2 px-2 sm:px-4">
-              <button
-                onClick={handleNextClick}
-                className="bg-[var(--primary-color)] text-white hover:bg-[var(--secondary-color)] focus:outline-none text-xl sm:text-2xl md:text-3xl p-2 sm:p-3 rounded-full shadow-lg opacity-50 hover:opacity-80 transition-opacity duration-300"
-              >
-                &gt;
-              </button>
-            </div>
-          </div>
+          )}
+
           {/* Check out All Solutions Button */}
           <div className="text-center mt-8">
             <a
-              href="/all-solutions"
+              href="/twb-solutions"
               className="bg-[var(--secondary-color)] text-white py-2 px-6 rounded-lg hover:bg-[var(--primary-color)] focus:outline-none text-lg font-semibold"
             >
               Check out All Solutions

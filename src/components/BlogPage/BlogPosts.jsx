@@ -4,103 +4,99 @@ import Wrapper from '../../components/reusable/Wrapper';
 import { useInView } from 'react-intersection-observer';
 import ReusableModal from '../../components/BlogPage/PostModal';
 import { debounce } from 'lodash';
-import blogPosts from '/src/assets/data/blogPosts.json'; // Import the JSON data
+import useApiRequest from '../../hooks/useApiRequest'; // Use your custom hook to fetch data
 
 const BlogPosts = () => {
-  const [posts, setPosts] = useState([]);
-  const [displayedPosts, setDisplayedPosts] = useState([]);
+  const { data: articles, loading, error, makeRequest } = useApiRequest();
+  const [posts, setPosts] = useState([]); // All posts from API
+  const [displayedPosts, setDisplayedPosts] = useState([]); // Posts displayed on screen
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [modalPost, setModalPost] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
   const { ref, inView } = useInView();
+  const [visibleCount, setVisibleCount] = useState(6); // Control how many posts to show initially
 
-  // Fetch and filter posts based on category and search query
-  const filterPosts = useCallback(
-    (allPosts) => {
-      let filteredPosts = allPosts;
-
-      if (selectedCategory !== 'All') {
-        filteredPosts = filteredPosts.filter(post => post.category === selectedCategory);
+  // Fetch data from API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const fetchedPosts = await makeRequest('/articles'); // Call your API
+        setPosts(fetchedPosts); // Store all fetched posts
+        setDisplayedPosts(fetchedPosts.slice(0, visibleCount)); // Initialize with the first few posts
+      } catch (error) {
+        console.error('Error fetching articles:', error);
       }
+    };
 
-      if (searchQuery) {
-        filteredPosts = filteredPosts.filter(post =>
+    fetchData();
+  }, [makeRequest]);
+
+  // Filter posts based on category and search query
+  const filterPosts = useCallback(() => {
+    let filteredPosts = posts;
+
+    if (selectedCategory !== 'All') {
+      filteredPosts = filteredPosts.filter((post) => post.category === selectedCategory);
+    }
+
+    if (searchQuery) {
+      filteredPosts = filteredPosts.filter(
+        (post) =>
           post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           post.description.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-      }
-
-      return filteredPosts;
-    },
-    [selectedCategory, searchQuery]
-  );
-
-  // Load more posts when user scrolls
-  const loadMorePosts = useCallback(async () => {
-    if (loading || !hasMore) return;
-
-    setLoading(true);
-    const start = posts.length;
-    const limit = 6;
-    const newPosts = blogPosts.slice(start, start + limit); // Load posts from the JSON data
-    if (newPosts.length > 0) {
-      setPosts(prevPosts => [...prevPosts, ...newPosts]);
-    } else {
-      setHasMore(false);
+      );
     }
-    setLoading(false);
-  }, [loading, hasMore, posts]);
+
+    return filteredPosts;
+  }, [selectedCategory, searchQuery, posts]);
+
+  // Handle infinite scroll
+  useEffect(() => {
+    if (inView) {
+      setVisibleCount((prev) => prev + 6); // Load 6 more posts when the user scrolls into view
+    }
+  }, [inView]);
 
   // Handle category change
   const handleCategoryChange = (category) => {
     setSelectedCategory(category);
-    setDisplayedPosts(filterPosts(posts));
+    setDisplayedPosts(filterPosts().slice(0, visibleCount)); // Re-filter and limit the displayed posts
   };
 
   // Handle search input change with debounce
   const handleSearchChange = debounce((event) => {
     setSearchQuery(event.target.value);
-    setDisplayedPosts(filterPosts(posts));
+    setDisplayedPosts(filterPosts().slice(0, visibleCount));
   }, 300);
 
-  // Display post in modal
+  // Show the modal for detailed view
   const handleReadMoreClick = (post) => {
     setModalPost(post);
   };
 
-  // Initialize posts from the imported JSON data
+  // Update displayed posts when posts, category, or search query changes
   useEffect(() => {
-    const initialPosts = blogPosts.slice(0, 6); // Load the initial posts
-    setPosts(initialPosts);
-    setDisplayedPosts(initialPosts);
-  }, []);
-
-  // Load more posts when user scrolls into view
-  useEffect(() => {
-    if (inView) {
-      loadMorePosts();
-    }
-  }, [inView, loadMorePosts]);
-
-  // Update displayed posts when `posts` changes
-  useEffect(() => {
-    setDisplayedPosts(filterPosts(posts));
-  }, [posts, filterPosts]);
+    setDisplayedPosts(filterPosts().slice(0, visibleCount));
+  }, [filterPosts, visibleCount]);
 
   // Memoized category buttons
-  const categoryButtons = useMemo(() => (
-    [...new Set(posts.map(post => post.category))].map(category => (
-      <button
-        key={category}
-        className={`px-4 py-2 mx-2 ${selectedCategory === category ? 'bg-[var(--primary-color)] text-white' : 'bg-white text-[var(--primary-color)]'} border border-[var(--primary-color)] rounded-lg`}
-        onClick={() => handleCategoryChange(category)}
-      >
-        {category}
-      </button>
-    ))
-  ), [posts, selectedCategory]);
+  const categoryButtons = useMemo(
+    () =>
+      [...new Set(posts.map((post) => post.category))].map((category) => (
+        <button
+          key={category}
+          className={`px-4 py-2 mx-2 ${
+            selectedCategory === category
+              ? 'bg-[var(--primary-color)] text-white'
+              : 'bg-white text-[var(--primary-color)]'
+          } border border-[var(--primary-color)] rounded-lg`}
+          onClick={() => handleCategoryChange(category)}
+        >
+          {category}
+        </button>
+      )),
+    [posts, selectedCategory]
+  );
 
   return (
     <Wrapper>
@@ -118,7 +114,9 @@ const BlogPosts = () => {
           </div>
           <div className="flex flex-wrap justify-center mb-4">
             <button
-              className={`px-4 py-2 mx-2 ${selectedCategory === 'All' ? 'bg-[var(--primary-color)] text-white' : 'bg-white text-[var(--primary-color)]'} border border-[var(--primary-color)] rounded-lg`}
+              className={`px-4 py-2 mx-2 ${
+                selectedCategory === 'All' ? 'bg-[var(--primary-color)] text-white' : 'bg-white text-[var(--primary-color)]'
+              } border border-[var(--primary-color)] rounded-lg`}
               onClick={() => handleCategoryChange('All')}
             >
               All
@@ -126,7 +124,7 @@ const BlogPosts = () => {
             {categoryButtons}
           </div>
         </div>
-        
+
         {/* Display Blog Posts */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {displayedPosts.length > 0 ? (
@@ -138,7 +136,7 @@ const BlogPosts = () => {
                 title={post.title}
                 description={post.description}
                 author={post.author}
-                date={post.date}
+                date={new Date(post.createdAt).toLocaleDateString()}
                 onReadMore={() => handleReadMoreClick(post)}
               />
             ))
@@ -149,16 +147,13 @@ const BlogPosts = () => {
 
         {/* Loading Indicator */}
         {loading && <p className="text-center py-4">Loading...</p>}
+        {error && <p className="text-center py-4 text-red-500">Error loading articles.</p>}
 
-        {/* Intersection Observer for infinite scroll */}
+        {/* Infinite scroll trigger */}
         <div ref={ref} className="text-center py-4" />
 
         {/* Modal for Detailed Post View */}
-        <ReusableModal
-          isOpen={!!modalPost}
-          onClose={() => setModalPost(null)}
-          post={modalPost}
-        />
+        <ReusableModal isOpen={!!modalPost} onClose={() => setModalPost(null)} post={modalPost} />
       </div>
     </Wrapper>
   );

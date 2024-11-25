@@ -26,9 +26,11 @@ const ReusableModal = ({ isOpen, onClose, children }) => {
         >
           <FaTimes size={24} />
         </button>
-
+        <div className='m-4'>
         {/* Modal Content */}
+
         {children}
+        </div>
       </div>
     </div>
   );

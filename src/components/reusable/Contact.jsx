@@ -5,7 +5,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import axios from 'axios';
 import { FaRedditAlien, FaFacebookF, FaYoutube, FaLinkedinIn } from 'react-icons/fa';
-import { ImSpinner2 } from 'react-icons/im'; 
+import { ImSpinner2 } from 'react-icons/im';
+import useApiRequest from '../../hooks/useApiRequest';
 
 // Define the Zod schema for validation
 const schema = z.object({
@@ -16,34 +17,50 @@ const schema = z.object({
 });
 
 const Contact = () => {
-  const [messageSent, setMessageSent] = useState(false);
+  const [responseMessage, setResponseMessage] = useState('');
   const [loading, setLoading] = useState(false);
-
   const { register, handleSubmit, formState: { errors }, reset } = useForm({
     resolver: zodResolver(schema),
   });
 
-  // Handle form submission
-  const onSubmit = async (data) => {
-    setLoading(true); // Show spinner on submit
-    try {
-      const response = await axios.post('/.netlify/functions/sendEmail', data);
+  const { makeRequest } = useApiRequest(); // Initialize useApiRequest
 
-      if (response.status === 200) {
-        setMessageSent(true);
-      } else {
-        setMessageSent(false);
-      }
-      
-      // Reset form
-      reset();
-    } catch (error) {
-      setMessageSent(false);
-      console.error('Error sending message:', error);
-    } finally {
-      setLoading(false); // Hide spinner after processing
+  // Handle form submission
+const onSubmit = async (data) => {
+  setLoading(true); // Show spinner on submit
+  setResponseMessage(''); // Reset the response message
+
+try {
+  // Attempt to send data to the backend
+  const backendResponse = await makeRequest('/contact', 'POST', data);
+  
+  if (backendResponse.status === 200) {
+    setResponseMessage(backendResponse.message); // Set backend success message
+
+    // Send to Netlify in the background without waiting for the response
+    axios.post('/.netlify/functions/sendEmail', data).catch(err => {
+      console.error('Netlify request failed:', err); // Optionally log Netlify errors
+    });
+  } else {
+    // Attempt to send to Netlify if the backend fails
+    const netlifyResponse = await axios.post('/.netlify/functions/sendEmail', data);
+    if (netlifyResponse.status === 200) {
+      setResponseMessage('Message Sent Successfully'); // Set Netlify success message
+    } else {
+      setResponseMessage('Failed to send message.'); // Capture failure message
     }
-  };
+  }
+
+  // Reset form
+  reset();
+} catch (error) {
+  console.error('Error sending message:', error);
+  setResponseMessage('Failed to send message! Kindly check your details then try again.'); // Capture error message
+} finally {
+  setLoading(false); // Hide spinner after processing
+}
+
+};
 
   return (
     <div className="bg-gray-100">
@@ -121,7 +138,7 @@ const Contact = () => {
               </button>
               
               {/* Display message sent status */}
-              {messageSent && !loading && <p className="text-green-500 mt-4">Message has been sent!</p>}
+              {responseMessage && !loading && <p className={`mt-4 ${responseMessage.includes("Failed") ? 'text-red-500' : 'text-green-500'}`}>{responseMessage}</p>}
             </form>
           </div>
 

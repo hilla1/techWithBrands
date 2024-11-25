@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Link, useNavigate } from 'react-router-dom'; 
-import Wrapper from './Wrapper'; 
-import twbLogo from '../../assets/twbLogo.png'; 
+import { useNavigate } from 'react-router-dom';
+import Wrapper from './Wrapper';
+import twbLogo from '../../assets/twbLogo.png';
 import { FaFacebookF, FaTwitter, FaLinkedinIn, FaInstagram } from 'react-icons/fa';
+import useApiRequest from '../../hooks/useApiRequest';
 
 // Define Zod schema for validation
 const subscribeSchema = z.object({
@@ -13,7 +14,12 @@ const subscribeSchema = z.object({
 });
 
 const Footer = () => {
-  // Use React Hook Form with Zod resolver
+  const { makeRequest, loading } = useApiRequest(); // Use the custom hook
+  const [buttonState, setButtonState] = useState({
+    text: 'Subscribe',
+    bgColor: 'bg-[var(--secondary-color)]',
+  }); // State to manage button text and color
+
   const {
     register,
     handleSubmit,
@@ -22,38 +28,71 @@ const Footer = () => {
     resolver: zodResolver(subscribeSchema),
   });
 
-  // Use navigate for programmatic navigation
   const navigate = useNavigate();
 
-  // Handle form submission
-  const onSubmit = (data) => {
-    // Handle the valid form submission
-    console.log('Form submitted with:', data);
-    // Here you can add your API call or any other logic to handle the subscription
+  // Function to reset button state to default
+  const resetButtonState = () => {
+    setButtonState({
+      text: 'Subscribe',
+      bgColor: 'bg-[var(--secondary-color)]',
+    });
   };
 
-  // Function to navigate to the top of the landing page
+  const onSubmit = async (data) => {
+    try {
+      const response = await makeRequest('/subscribe', 'POST', data);
+
+      // On success
+      setButtonState({
+        text: response.message || 'Subscribed!',
+        bgColor: 'bg-green-500',
+      });
+
+      // Reset button state after 2 seconds
+      setTimeout(() => {
+        resetButtonState();
+      }, 2000);
+
+    } catch (err) {
+      // On failure (e.g., 400 error with response.message)
+      if (err.response?.status === 400) {
+        setButtonState({
+          text: err.response.data.message || 'Subscription failed',
+          bgColor: 'bg-red-500',
+        });
+      } else {
+        setButtonState({
+          text: 'An error occurred',
+          bgColor: 'bg-red-500',
+        });
+      }
+
+      // Reset button state after 2 seconds on failure
+      setTimeout(() => {
+        resetButtonState();
+      }, 2000);
+    }
+  };
+
+  // Navigate to the top of the page
   const goToTop = () => {
-    navigate('/'); // Navigate to the landing page
-    window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to the top smoothly
+    navigate('/');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
     <footer className="bg-[#1d2356] text-white">
       <Wrapper>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 py-8">
-          {/* Column 1: Logo and Description */}
           <div className="flex flex-col">
-            {/* Use a button to trigger the scroll function */}
             <button onClick={goToTop}>
               <img src={twbLogo} alt="TechwithBrands Logo" className="w-60 mb-4" />
             </button>
             <p className="text-lg">
-              TechwithBrands is dedicated to transforming ideas into innovative solutions. We specialize in consultation, tech solutions, and branding to help businesses thrive in the digital age. Our expertise in web and mobile apps, along with effective brand strategies, ensures your success in a competitive market.
+              TechwithBrands is dedicated to transforming ideas into innovative solutions. We specialize in consultation, tech solutions, and branding to help businesses thrive in the digital age.
             </p>
           </div>
-          
-          {/* Column 2: Services */}
+
           <div>
             <h4 className="text-xl font-semibold mb-4">Services</h4>
             <ul>
@@ -64,7 +103,6 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Column 3: Contact Information */}
           <div>
             <h4 className="text-xl font-semibold mb-4">Contact Us</h4>
             <ul>
@@ -75,10 +113,13 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Column 4: Subscribe and Social Media */}
           <div className="flex flex-col">
             <h4 className="text-xl font-semibold mb-4">Subscribe</h4>
-            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col">
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              onClick={resetButtonState} // Reset button when clicking on the form
+              className="flex flex-col"
+            >
               <input
                 type="email"
                 placeholder="Enter your email"
@@ -88,9 +129,10 @@ const Footer = () => {
               {errors.email && <span className="text-red-500 text-sm mb-2">{errors.email.message}</span>}
               <button
                 type="submit"
-                className="bg-[var(--secondary-color)] text-white px-4 py-2 rounded-lg hover:bg-[var(--primary-color)]"
+                className={`${buttonState.bgColor} text-white px-4 py-2 rounded-lg hover:bg-[var(--primary-color)]`}
+                disabled={loading}
               >
-                Subscribe
+                {loading ? 'Subscribing...' : buttonState.text}
               </button>
             </form>
             <div className="flex space-x-4 mt-6">
@@ -110,8 +152,7 @@ const Footer = () => {
           </div>
         </div>
       </Wrapper>
-      
-      {/* Copyright Section */}
+
       <div className="bg-black text-center py-2">
         <p className="text-xs md:text-xl">&copy; {new Date().getFullYear()} TechwithBrands. All rights reserved.</p>
       </div>
