@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/reusable/Navbar';
 import Hero from '../components/LandingPage/Hero';
-import Features from '../components/LandingPage/Features';
-import Solutions from '../components/LandingPage/Solutions';
+import Services from '../components/LandingPage/Services';
+import WhyChooseUs from '../components/LandingPage/WhyChooseUs';
 import Process from '../components/LandingPage/Process';
-import Pricing from '../components/LandingPage/Pricing';
+import CallToAction from '../components/LandingPage/CallToAction';
 import Blog from '../components/LandingPage/Blog';
 import Testimonials from '../components/LandingPage/Testimonials';
 import Contact from '../components/reusable/Contact';
@@ -39,22 +39,19 @@ const LandingPage = () => {
             <Hero />
           </FadeInOnScroll>
           <FadeInOnScroll delay={200}>
-            <Features />
+            <Services />
           </FadeInOnScroll>
           <FadeInOnScroll delay={200}>
-            <Solutions />
+            <WhyChooseUs />
           </FadeInOnScroll>
           <FadeInOnScroll delay={200}>
             <Process />
           </FadeInOnScroll>
           <FadeInOnScroll delay={200}>
-            <Pricing />
+            <CallToAction />
           </FadeInOnScroll>
           <FadeInOnScroll delay={200}>
             <Blog />
-          </FadeInOnScroll>
-          <FadeInOnScroll delay={200}>
-            <Testimonials />
           </FadeInOnScroll>
           <FadeInOnScroll delay={200}>
             <Contact />

@@ -81,7 +81,7 @@ const Footer = () => {
   };
 
   return (
-    <footer className="bg-[#1d2356] text-white">
+    <footer className="bg-gray-900 text-white">
       <Wrapper>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 py-8">
           <div className="flex flex-col">
@@ -89,7 +89,7 @@ const Footer = () => {
               <img src={twbLogo} alt="TechwithBrands Logo" className="w-60 mb-4" />
             </button>
             <p className="text-lg">
-              TechwithBrands is dedicated to transforming ideas into innovative solutions. We specialize in consultation, tech solutions, and branding to help businesses thrive in the digital age.
+            Transforming brands through innovative technology solutions.
             </p>
           </div>
 

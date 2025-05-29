@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useNavbar } from '../../hooks/useNavbar';
 import { navbarItems } from '../../assets/data/navbarData';
-import twbLogo from '../../assets/twbLogo.png';
+import twbLogo from '../../assets/twbLogo1.png';
 import twbLogo1 from '../../assets/twbLogo1.png';
 import { FaBars, FaTimes, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import LoginModal from '../../components/Auth/LoginModal'; 
@@ -18,10 +18,11 @@ const Navbar = () => {
   const [isLoginModalOpen, setLoginModalOpen] = useState(false); 
   const [isRegisterModalOpen, setRegisterModalOpen] = useState(false);
 
-  const navbarBgColor = isScrolled ? 'bg-white' : 'bg-[#111236]';
-  const textColor = isScrolled ? 'text-black' : 'text-white';
-  const hoverBgColor = isScrolled ? 'hover:bg-gray-200' : 'hover:bg-[#2E3191]';
-  const iconColor = isScrolled ? 'text-primary' : 'text-white';
+  // Static colors for white background
+  const navbarBgColor = 'bg-white';
+  const textColor = 'text-black';
+  const hoverBgColor = 'hover:bg-gray-200';
+  const iconColor = 'text-primary';
 
   const handleDropdownToggle = (index) => {
     setOpenDropdown(openDropdown === index ? null : index);
@@ -34,7 +35,7 @@ const Navbar = () => {
   return (
     <>
       <nav
-        className={`fixed w-full top-0 left-0 z-50 transition-transform duration-300 ease-in-out ${visible ? 'translate-y-0' : '-translate-y-full'} ${navbarBgColor}`}
+        className={`fixed w-full top-0 left-0 shadow-sm z-50 transition-transform duration-300 ease-in-out ${visible ? 'translate-y-0' : '-translate-y-full'} ${navbarBgColor}`}
       >
         <div className={`flex items-center py-4 px-4 xl:mx-20 ${navbarBgColor}`}>
           <a href="/" className="block"> 

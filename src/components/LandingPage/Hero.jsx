@@ -21,36 +21,35 @@ const Hero = () => {
 
   return (
     <section
-      className="bg-[#1d2356] pt-6 pb-6"  
+      className="pt-6 pb-6 bg-slate-50"
       style={{ paddingTop: `${navbarHeight}px` }}
     >
       <Wrapper>
         <div className="flex flex-col md:flex-row h-full">
           {/* Left Section (1/2) */}
           <div className="md:w-1/2 w-full flex flex-col justify-center text-center md:text-left mb-8 md:mb-0">
-            <h1 className="text-3xl md:text-5xl font-bold text-white">
-              <span className="bg-gradient-to-r from-white to-[#F89F2D] bg-clip-text text-transparent">
-                Sell
+          <div className="w-fit self-center text-sm font-semibold text-white mb-4 px-3 py-1 rounded-full bg-gradient-to-r from-[#2E3191] to-[#F89F2D] shadow-lg">
+            Trusted by 500+ Brands
+            </div>
+            <h1 className="text-3xl md:text-6xl font-bold text-[#2E3191]">
+              <span className="bg-gradient-to-r from-[#2E3191] to-[#F89F2D] bg-clip-text text-transparent">
+              Transform
               </span>{" "}
               your{" "}
-              <span className="bg-gradient-to-r from-white to-[#F89F2D] bg-clip-text text-transparent">
-                ideas
+              <span className="bg-gradient-to-r from-[#2E3191] to-[#F89F2D] bg-clip-text text-transparent">
+               Brand
               </span>{" "}
-              with our{" "}
-              <span className="bg-gradient-to-r from-white to-[#F89F2D] bg-clip-text text-transparent">
-                consultation
+              with{" "}
+              <span className="bg-gradient-to-r from-[#2E3191] to-[#F89F2D] bg-clip-text text-transparent">
+              Cutting-Edge
               </span>{" "}
-              services.
+              Tech
             </h1>
-            <p className="mt-4 md:mt-6 text-md md:text-lg text-white">
-              From tech solutions to branding, we turn concepts into reality.
-              Develop web apps, mobile solutions, dashboards, and more. Let us guide you through brand
-              solutions, offering comprehensive brand guides and packages.
+            <p className="mt-4 md:mt-6 text-md md:text-xl text-gray-600">
+            We help brands leverage technology to drive growth, enhance customer experiences, and stay ahead of the competition.
             </p>
-            <p className="mt-2 md:mt-4 text-md md:text-lg text-white">
-              Seamlessly buy our services, track your project’s progress, and manage
-              your accounts all in one place. Our system handles jobs, payment
-              calculations, budgeting, invoicing, bookkeeping, and more.
+            <p className="mt-2 md:mt-4 text-md md:text-xl text-gray-600">
+            From strategy to implementation, we're your tech partner.
             </p>
             
             {/* Buttons Row */}
@@ -59,7 +58,7 @@ const Hero = () => {
                 Get Started
               </button>
               <button className="w-[200px] sm:w-[250px] md:w-[300px] py-2 bg-transparent border-2 border-[#F89F2D] text-[#F89F2D] font-semibold rounded-lg hover:bg-[#F89F2D] hover:text-[#2E3191] transition duration-300 ease-in-out">
-                Book Demo
+                Book Consultation
               </button>
             </div>
           </div>

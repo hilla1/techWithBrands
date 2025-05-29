@@ -1,5 +1,5 @@
 import React from 'react';
-import Wrapper from '../reusable/Wrapper'; // Adjust path as necessary
+import Wrapper from '../reusable/Wrapper'; 
 import { FaChartLine, FaFileAlt, FaCog, FaStar } from 'react-icons/fa';
 
 // Feature data
