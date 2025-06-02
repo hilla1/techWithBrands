@@ -6,11 +6,10 @@ import WhyChooseUs from '../components/LandingPage/WhyChooseUs';
 import Process from '../components/LandingPage/Process';
 import CallToAction from '../components/LandingPage/CallToAction';
 import Blog from '../components/LandingPage/Blog';
-import Testimonials from '../components/LandingPage/Testimonials';
 import Contact from '../components/reusable/Contact';
 import Footer from '../components/reusable/Footer';
 import SplashScreen from '../components/reusable/SplashScreen';
-import FadeInOnScroll from '../components/reusable/FadeInOnScroll'; // Import the new component
+import FadeInOnScroll from '../components/reusable/FadeInOnScroll'; 
 
 const LandingPage = () => {
   const [isSplashScreenVisible, setIsSplashScreenVisible] = useState(false);

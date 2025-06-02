@@ -5,7 +5,7 @@ import * as z from 'zod';
 import ReusableModal from './ReusableModal';
 
 const steps = ['Tell us about yourself', 'Project Details', 'Schedule Your Consultation'];
-const gradient = 'bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600';
+const gradient = 'bg-gradient-to-r from-[#2E3191] to-[#F89F2D]';
 
 // Zod schemas for each step validation
 const stepSchemas = [
@@ -26,7 +26,6 @@ const stepSchemas = [
   }),
 ];
 
-// Combine all schemas for full form submission validation (optional)
 const fullSchema = stepSchemas.reduce((acc, schema) => acc.merge(schema), z.object({}));
 
 const ConsultationModal = ({ isOpen, onClose }) => {
@@ -62,10 +61,10 @@ const ConsultationModal = ({ isOpen, onClose }) => {
 
   const onSubmit = (data) => {
     console.log('Final submission:', data);
-    onClose(); // Close main modal first
+    onClose();
     setTimeout(() => {
       setSuccessModalOpen(true);
-    }, 300);
+    }, 800);
   };
 
   useEffect(() => {
@@ -79,7 +78,6 @@ const ConsultationModal = ({ isOpen, onClose }) => {
     }
   }, [successModalOpen, reset]);
 
-  // Services array watch for checkbox checked state
   const services = watch('services') || [];
 
   const renderStepContent = () => {
@@ -91,34 +89,16 @@ const ConsultationModal = ({ isOpen, onClose }) => {
           <>
             <h3 className="text-lg font-bold mb-2">Tell us about yourself</h3>
             <p className="mb-4 text-gray-500 text-sm">We'll use this information to prepare for your consultation</p>
-            <input
-              {...register('fullName')}
-              placeholder="Full Name *"
-              className={inputClass}
-            />
+            <input {...register('fullName')} placeholder="Full Name *" className={inputClass} />
             {errors.fullName && <p className="text-red-500 text-sm">{errors.fullName.message}</p>}
 
-            <input
-              {...register('email')}
-              placeholder="Email Address *"
-              className={inputClass}
-              type="email"
-            />
+            <input {...register('email')} placeholder="Email Address *" className={inputClass} type="email" />
             {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
 
-            <input
-              {...register('companyName')}
-              placeholder="Company Name *"
-              className={inputClass}
-            />
+            <input {...register('companyName')} placeholder="Company Name *" className={inputClass} />
             {errors.companyName && <p className="text-red-500 text-sm">{errors.companyName.message}</p>}
 
-            <input
-              {...register('phoneNumber')}
-              placeholder="Phone Number"
-              className={inputClass}
-              type="tel"
-            />
+            <input {...register('phoneNumber')} placeholder="Phone Number" className={inputClass} type="tel" />
           </>
         );
 
@@ -158,9 +138,7 @@ const ConsultationModal = ({ isOpen, onClose }) => {
             {errors.services && <p className="text-red-500 text-sm">{errors.services.message}</p>}
 
             <select {...register('budget')} className={inputClass} defaultValue="">
-              <option value="" disabled>
-                Select budget range
-              </option>
+              <option value="" disabled>Select budget range</option>
               <option>Below $5,000</option>
               <option>$5,000 - $10,000</option>
               <option>$10,000 - $25,000</option>
@@ -170,9 +148,7 @@ const ConsultationModal = ({ isOpen, onClose }) => {
             {errors.budget && <p className="text-red-500 text-sm">{errors.budget.message}</p>}
 
             <select {...register('timeline')} className={inputClass} defaultValue="">
-              <option value="" disabled>
-                Select timeline
-              </option>
+              <option value="" disabled>Select timeline</option>
               <option>Immediately</option>
               <option>1-3 months</option>
               <option>3-6 months</option>
@@ -180,12 +156,7 @@ const ConsultationModal = ({ isOpen, onClose }) => {
             </select>
             {errors.timeline && <p className="text-red-500 text-sm">{errors.timeline.message}</p>}
 
-            <textarea
-              {...register('description')}
-              placeholder="Project Description"
-              className={inputClass}
-              rows="3"
-            />
+            <textarea {...register('description')} placeholder="Project Description" className={inputClass} rows="3" />
           </>
         );
 
@@ -235,57 +206,50 @@ const ConsultationModal = ({ isOpen, onClose }) => {
 
   return (
     <>
-      <ReusableModal
-        isOpen={isOpen}
-        onClose={onClose}
-      >
+      <ReusableModal isOpen={isOpen} onClose={onClose}>
         <div className='pt-6'>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {/* Progress Bar */}
-          <div className="w-full h-2 rounded bg-gray-200 overflow-hidden">
-            <div className={`${gradient} h-full`} style={{ width: `${((step + 1) / 3) * 100}%` }}></div>
-          </div>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div className="w-full h-2 rounded bg-gray-200 overflow-hidden">
+              <div className={`${gradient} h-full`} style={{ width: `${((step + 1) / 3) * 100}%` }}></div>
+            </div>
 
-          {/* Step Title */}
-          <div className="text-center">
-            <h2 className="text-xl font-bold">Book Your Free Consultation</h2>
-            <p className="text-sm text-gray-500">Step {step + 1} of 3</p>
-          </div>
+            <div className="text-center">
+              <h2 className="text-xl font-bold">Book Your Free Consultation</h2>
+              <p className="text-sm text-gray-500">Step {step + 1} of 3</p>
+            </div>
 
-          {/* Step Content */}
-          <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-1">
-            {renderStepContent()}
-          </div>
+            <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-1">
+              {renderStepContent()}
+            </div>
 
-          {/* Navigation Buttons */}
-          <div className="flex justify-between items-center pt-4">
-            {step > 0 && (
-              <button
-                type="button"
-                onClick={prevStep}
-                className="px-4 py-2 text-sm text-white rounded bg-gray-400 hover:bg-gray-500"
-              >
-                Back
-              </button>
-            )}
-            {step < 2 ? (
-              <button
-                type="button"
-                onClick={nextStep}
-                className="ml-auto px-4 py-2 text-sm text-white rounded bg-orange-500 hover:bg-orange-600"
-              >
-                Continue
-              </button>
-            ) : (
-              <button
-                type="submit"
-                className="ml-auto px-4 py-2 text-sm text-white rounded bg-green-500 hover:bg-green-600"
-              >
-                Book Consultation
-              </button>
-            )}
-          </div>
-        </form>
+            <div className="flex justify-between items-center pt-4">
+              {step > 0 && (
+                <button
+                  type="button"
+                  onClick={prevStep}
+                  className="px-4 py-2 text-sm text-white rounded bg-[#F89F2D] hover:bg-[#d78e4e]"
+                >
+                  Back
+                </button>
+              )}
+              {step < 2 ? (
+                <button
+                  type="button"
+                  onClick={nextStep}
+                  className="ml-auto px-4 py-2 text-sm text-white rounded bg-[#2E3191] hover:bg-[#F89F2D]"
+                >
+                  Continue
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  className="ml-auto px-4 py-2 text-sm text-white rounded bg-green-500 hover:bg-green-600"
+                >
+                  Book Consultation
+                </button>
+              )}
+            </div>
+          </form>
         </div>
       </ReusableModal>
 
