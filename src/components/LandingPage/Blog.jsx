@@ -1,50 +1,41 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Wrapper from '../reusable/Wrapper';
 import BlogCard from '../reusable/BlogCard';
 import PostModal from '../../components/BlogPage/PostModal';
-import useApiRequest from '../../hooks/useApiRequest'; 
+import useApi from '../../hooks/useApi';
 
 const Blog = () => {
-  const [posts, setPosts] = useState([]); // All posts
-  const [selectedPost, setSelectedPost] = useState(null); // Selected post for modal
-  const [isModalOpen, setIsModalOpen] = useState(false); // Modal open state
-  const navigate = useNavigate(); // Router navigation hook
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
 
-  const { data: fetchedPosts, loading, error, makeRequest } = useApiRequest();
+  const { useApiQuery } = useApi();
 
-  // Fetch posts from server
-  const fetchPosts = useCallback(async () => {
-    try {
-      const response = await makeRequest('/articles', 'GET');
-      // Limit the number of posts to 4
-      setPosts(response.slice(0, 4));
-    } catch (err) {
-      console.error('Error fetching posts:', err);
-    }
-  }, [makeRequest]);
+  // Use React Query to fetch posts
+  const {
+    data: posts = [], // default to empty array
+    isLoading,
+    isError,
+    error,
+  } = useApiQuery('/articles');
 
-  // Effect to fetch posts on component mount
-  useEffect(() => {
-    fetchPosts();
-  }, [fetchPosts]);
+  // Limit to first 4 posts
+  const displayedPosts = posts.slice(0, 4);
 
-  // Handle "Read More" click to open modal with selected post
   const handleReadMoreClick = (post) => {
     setSelectedPost(post);
     setIsModalOpen(true);
   };
 
-  // Close modal
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedPost(null);
   };
 
-  // Navigate to the full blog page
   const handleNavigateToBlog = () => {
-    navigate('/blog'); // Navigate to the blog page
-    window.scrollTo({ top: 0, behavior: 'smooth' }); // Smooth scroll to the top
+    navigate('/blog');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -54,16 +45,22 @@ const Blog = () => {
           <h1 className="text-4xl font-bold text-[var(--primary-color)] mb-4">From Our Blog</h1>
         </div>
 
-        {/* Show loading state while fetching */}
-        {loading && <p>Loading...</p>}
-        
-        {/* Handle API Error */}
-        {error && <p>Error fetching posts: {error.message}</p>}
+        {/* Loading state */}
+        {isLoading && (
+          <div className="text-center text-lg text-gray-700">Loading...</div>
+        )}
 
-        {/* Display Blog Posts */}
-        {!loading && !error && (
+        {/* Error state */}
+        {isError && (
+          <div className="text-center text-red-500">
+            Error fetching posts: {error?.message || 'Something went wrong.'}
+          </div>
+        )}
+
+        {/* Blog posts */}
+        {!isLoading && !isError && (
           <div className="flex flex-wrap -mx-4">
-            {posts.map((post, index) => (
+            {displayedPosts.map((post, index) => (
               <div className="w-full md:w-1/4 px-4 mb-4" key={index}>
                 <BlogCard
                   image={post.image}
@@ -71,15 +68,15 @@ const Blog = () => {
                   title={post.title}
                   description={post.description}
                   author={post.author}
-                  date={new Date(post.createdAt).toLocaleDateString()} // Use createdAt for date
-                  onReadMore={() => handleReadMoreClick(post)} 
+                  date={new Date(post.createdAt).toLocaleDateString()}
+                  onReadMore={() => handleReadMoreClick(post)}
                 />
               </div>
             ))}
           </div>
         )}
 
-        {/* Button to navigate to all blog posts */}
+        {/* Button to navigate to full blog */}
         <div className="text-center mt-12">
           <button
             className="bg-[var(--secondary-color)] text-white px-6 py-3 rounded-lg hover:bg-[var(--primary-color)]"
@@ -89,7 +86,7 @@ const Blog = () => {
           </button>
         </div>
 
-        {/* Post Modal for detailed view */}
+        {/* Modal view */}
         {isModalOpen && selectedPost && (
           <PostModal
             isOpen={isModalOpen}

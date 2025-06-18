@@ -1,7 +1,6 @@
 // src/hooks/useApiRequest.js
 import { useState, useCallback, useEffect } from 'react';
 import axios from 'axios';
-import useLogout from './useLogout';
 
 const useApiRequest = () => {
   const [token, setToken] = useState(null); // Manage token state here
@@ -9,7 +8,6 @@ const useApiRequest = () => {
   const [loading, setLoading] = useState(false); 
   const [error, setError] = useState(null); 
   const [retryCount, setRetryCount] = useState(0); 
-  const { logout } = useLogout();
 
   // Token refresh function
   const refreshAuthToken = async () => {

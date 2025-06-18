@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { FaGoogle, FaEye, FaEyeSlash } from 'react-icons/fa';
 import ReusableModal from '../../components/reusable/ReusableModal';
 import twbLogo from '../../assets/twbFalcon.png';
 import LoginModal from './LoginModal';
+import { useAuth } from '../../context/AuthContext';
 
 // Validation schema using Zod
 const schema = z.object({
@@ -21,6 +22,7 @@ const schema = z.object({
 });
 
 const RegisterModal = ({ isOpen, onClose }) => {
+  const { checkAuthentication } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -28,7 +30,6 @@ const RegisterModal = ({ isOpen, onClose }) => {
   const [error, setError] = useState(null);
 
   const navigate = useNavigate();
-  const location = useLocation();
 
   const {
     register,
@@ -51,34 +52,14 @@ const RegisterModal = ({ isOpen, onClose }) => {
         email: data.email,
         password: data.password,
       });
-      const { status } = response.data;
+      const { success, message } = response.data;
 
       // Check for successful registration
-      if (status === 'registered') {
-        onClose();
-        try {
-          const response = await axios.post(`${import.meta.env.VITE_API_URL}/auth/signin`, {
-            email: data.email,
-            password: data.password,
-          }, { withCredentials: true }); 
-    
-          const { status } = response.data;
-    
-          if (status === 'authenticated') {
-            // Close modal and redirect
-            onClose();
-            
-            navigate('/settings');
-          } else {
-            setLoginError('Login failed');
-          }
-        } catch (error) {
-          setLoginError(error.response?.data?.message || 'Login failed');
-        } finally {
-          setLoading(false);
-        }
+      if (success) {
+        await checkAuthentication();
+        navigate('/dashboard');
       } else {
-        setError('Registration failed. Please try again.');
+        setError(message);
       }
     } catch (err) {
       // Handle errors, display error message if registration fails
@@ -92,28 +73,6 @@ const RegisterModal = ({ isOpen, onClose }) => {
   const handleGoogleRegister = () => {
     window.location.assign(`${import.meta.env.VITE_API_URL}/auth/google`);
   };
-
-  // Effect to capture query params after Google sign-in
-  useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    const code = searchParams.get('code');
-
-    if (code) {
-      // Handle Google OAuth callback (exchange code for tokens)
-      axios.post(`${import.meta.env.VITE_API_URL}/auth/oauth/callback`, { code })
-        .then((response) => {
-          if (response.data.authenticated) {
-            navigate('/settings');
-          } else {
-            setError('Google registration failed. Please try again.');
-          }
-        })
-        .catch((error) => {
-          console.error('Error during Google OAuth callback:', error);
-          setError('Google registration failed. Please try again.');
-        });
-    }
-  }, [location.search, navigate]);
 
   // Handle modal close
   const handleClose = () => {

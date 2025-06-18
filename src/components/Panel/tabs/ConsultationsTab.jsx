@@ -1,71 +1,61 @@
-import React, { useState } from 'react';
-import { FiMoreVertical } from 'react-icons/fi';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { FiEdit } from 'react-icons/fi';
+import { useAuth } from '../../../context/AuthContext';
+import ConsultationModal from '../../reusable/ConsultationModal';
+import ConsultationModalTabs from '../ConsultationModalTabs';
 
 const ConsultationsTab = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
-  const [consultations, setConsultations] = useState([
-    {
-      id: 1,
-      client: 'John Doe',
-      contact: 'john@example.com',
-      datetime: '2025-06-02 10:00 AM',
-      services: 'Logo Design',
-      status: 'Scheduled',
-    },
-    {
-      id: 2,
-      client: 'Jane Smith',
-      contact: 'jane@example.com',
-      datetime: '2025-06-05 02:00 PM',
-      services: 'Brand Strategy',
-      status: 'Completed',
-    },
-    {
-      id: 3,
-      client: 'Bob Johnson',
-      contact: 'bob@example.com',
-      datetime: '2025-06-10 11:00 AM',
-      services: 'Website UI/UX Consultation',
-      status: 'Cancelled',
-    },
-    {
-      id: 4,
-      client: 'Alice Williams',
-      contact: 'alice@example.com',
-      datetime: '2025-06-12 03:00 PM',
-      services: 'Mobile App Planning',
-      status: 'Scheduled',
-    },
-    {
-      id: 5,
-      client: 'Michael Brown',
-      contact: 'michael@example.com',
-      datetime: '2025-06-15 09:00 AM',
-      services: 'Digital Marketing Strategy',
-      status: 'Completed',
-    },
-  ]);
+  const [consultations, setConsultations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { backend } = useAuth();
 
-  const filteredConsultations = consultations.filter((consultation) => {
+  const [isCreateModalOpen, setCreateModalOpen] = useState(false);
+  const [selectedConsultation, setSelectedConsultation] = useState(null);
+
+  // Fetch consultations
+  const fetchConsultations = async () => {
+    try {
+      const res = await axios.get(`${backend}/consultation/get-consultations`, {
+        withCredentials: true,
+      });
+      setConsultations(res.data.consultations || []);
+    } catch (error) {
+      console.error('Error fetching consultations:', error.response?.data || error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchConsultations();
+  }, []);
+
+  // Filter and Search
+  const filteredConsultations = consultations.filter((c) => {
+    const clientName = c.user?.fullName || 'Unknown';
     return (
-      consultation.client.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      (filterStatus ? consultation.status === filterStatus : true)
+      clientName.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      (filterStatus ? c.status === filterStatus.toLowerCase() : true)
     );
   });
 
-  const gradientTextClass = "bg-gradient-to-r from-[#aab3ff] to-[#ffd6a1] bg-clip-text text-transparent font-medium";
   const statusBadge = {
-    Scheduled: "bg-blue-100 text-blue-800",
-    Completed: "bg-green-100 text-green-800",
-    Cancelled: "bg-red-100 text-red-800",
+    scheduled: 'bg-blue-100 text-blue-800',
+    rescheduled: 'bg-blue-50 text-blue-800',
+    completed: 'bg-green-100 text-green-800',
+    canceled: 'bg-red-100 text-red-800',
+    pending: 'bg-yellow-100 text-yellow-800',
   };
+
+  const gradientTextClass = 'bg-gradient-to-r from-[#aab3ff] to-[#ffd6a1] bg-clip-text text-transparent font-medium';
 
   return (
     <div>
-      {/* Header: Search, Filter & Add New */}
+      {/* Search and Filter Controls */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        {/* Search & Filter */}
         <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
           <input
             type="text"
@@ -80,108 +70,125 @@ const ConsultationsTab = () => {
             onChange={(e) => setFilterStatus(e.target.value)}
           >
             <option value="">All Statuses</option>
-            <option value="Scheduled">Scheduled</option>
-            <option value="Completed">Completed</option>
-            <option value="Cancelled">Cancelled</option>
+            <option value="scheduled">Scheduled</option>
+            <option value="rescheduled">Rescheduled</option>
+            <option value="completed">Completed</option>
+            <option value="canceled">Canceled</option>
+            <option value="pending">Pending</option>
           </select>
         </div>
 
-        {/* Add New Button */}
-        <div className="w-full md:w-auto">
-          <button className="w-full md:w-auto bg-gradient-to-r from-[#bfc9ff] to-[#ffe4c2] text-gray-800 px-6 py-2 rounded-md font-semibold hover:opacity-90 transition text-sm shadow-sm">
-            + Add New Consultation
-          </button>
-        </div>
+        <button
+          onClick={() => setCreateModalOpen(true)}
+          className="bg-gradient-to-r from-[#bfc9ff] to-[#ffe4c2] text-gray-800 px-6 py-2 rounded-md font-semibold hover:opacity-90 transition text-sm shadow-sm w-full md:w-auto"
+        >
+          + Add New Consultation
+        </button>
       </div>
 
-      {/* Table View (Desktop) */}
+      {/* Desktop Table View */}
       <div className="hidden md:block overflow-x-auto border border-gray-200 rounded-md">
         <table className="min-w-full bg-white">
           <thead>
             <tr className="bg-gradient-to-r from-[#f1f3ff] to-[#fff4e6] text-gray-800">
               <th className="px-4 py-2 border-b text-left">Client</th>
               <th className="px-4 py-2 border-b text-left">Contact</th>
-              <th className="px-4 py-2 border-b text-left">Dateline</th>
+              <th className="px-4 py-2 border-b text-left">Time Slot</th>
               <th className="px-4 py-2 border-b text-left">Services</th>
+              <th className="px-4 py-2 border-b text-left">Handlers</th>
               <th className="px-4 py-2 border-b text-left">Status</th>
               <th className="px-4 py-2 border-b text-center">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {filteredConsultations.length > 0 ? (
-              filteredConsultations.map((consultation) => (
-                <tr key={consultation.id} className="hover:bg-gray-50 transition">
-                  <td className="px-4 py-2 border-b">{consultation.client}</td>
-                  <td className="px-4 py-2 border-b">{consultation.contact}</td>
-                  <td className="px-4 py-2 border-b">{consultation.datetime}</td>
-                  <td className="px-4 py-2 border-b">{consultation.services}</td>
+            {loading ? (
+              <tr>
+                <td colSpan={7} className="text-center py-8 text-gray-500">Loading...</td>
+              </tr>
+            ) : filteredConsultations.length > 0 ? (
+              filteredConsultations.map((c) => (
+                <tr key={c._id} className="hover:bg-gray-50 transition">
+                  <td className="px-4 py-2 border-b">{c.user?.name || 'N/A'}</td>
+                  <td className="px-4 py-2 border-b">{c.user?.email || 'N/A'}</td>
+                  <td className="px-4 py-2 border-b">{c.timeSlot || '—'}</td>
+                  <td className="px-4 py-2 border-b">{(c.services || []).join(', ')}</td>
                   <td className="px-4 py-2 border-b">
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusBadge[consultation.status]}`}>
-                      {consultation.status}
+                    {(c.handlers || []).map((h, idx) => (
+                      <p key={idx} className="text-xs text-gray-700">{h.fullName || h.email || '—'}</p>
+                    ))}
+                  </td>
+                  <td className="px-4 py-2 border-b">
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusBadge[c.status]}`}>
+                      {c.status}
                     </span>
                   </td>
                   <td className="px-4 py-2 border-b text-center">
-                    <button className="inline-flex justify-center w-full px-2 py-1 text-sm text-gray-600 hover:text-gray-900">
-                      <FiMoreVertical />
+                    <button
+                      className="text-blue-600 hover:text-blue-800 text-sm"
+                      onClick={() => setSelectedConsultation(c)}
+                    >
+                      <FiEdit />
                     </button>
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={6} className="text-center py-8 text-gray-500">
-                  No consultations found.
-                </td>
+                <td colSpan={7} className="text-center py-8 text-gray-500">No consultations found.</td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
 
-      {/* Card View (Mobile) */}
+      {/* Mobile View Cards */}
       <div className="block md:hidden space-y-4">
-        {filteredConsultations.length > 0 ? (
-          filteredConsultations.map((consultation) => (
-            <div
-              key={consultation.id}
-              className="relative rounded-xl border border-gray-200 bg-white shadow-sm p-4"
-            >
-              {/* Accent bar */}
-              <div className="absolute top-0 left-0 w-full h-1 rounded-t-xl bg-gradient-to-r from-[#aab3ff] to-[#ffd6a1]" />
-              <div className="flex justify-between items-start mb-3">
-                <h3 className="text-lg font-semibold text-[#2E3191]">
-                  {consultation.client}
-                </h3>
-                <button className="text-gray-400 hover:text-gray-600">
-                  <FiMoreVertical />
-                </button>
-              </div>
-              <p>
-                <span className={gradientTextClass}>Contact: </span>
-                {consultation.contact}
-              </p>
-              <p>
-                <span className={gradientTextClass}>Date & Time: </span>
-                {consultation.datetime}
-              </p>
-              <p>
-                <span className={gradientTextClass}>Services: </span>
-                {consultation.services}
-              </p>
-              <p>
-                <span className={gradientTextClass}>Status: </span>
-                <span className={`ml-1 px-2 py-0.5 rounded-full text-xs font-semibold ${statusBadge[consultation.status]}`}>
-                  {consultation.status}
-                </span>
-              </p>
+        {filteredConsultations.map((c) => (
+          <div key={c._id} className="relative rounded-xl border border-gray-200 bg-white shadow-sm p-4">
+            <div className="absolute top-0 left-0 w-full h-1 rounded-t-xl bg-gradient-to-r from-[#aab3ff] to-[#ffd6a1]" />
+            <div className="flex justify-between items-start mb-3">
+              <h3 className="text-lg font-semibold text-[#2E3191]">{c.user?.name || 'N/A'}</h3>
+              <button
+                className="text-blue-600 hover:text-blue-800 text-sm"
+                onClick={() => setSelectedConsultation(c)}
+              >
+                <FiEdit />
+              </button>
             </div>
-          ))
-        ) : (
-          <p className="text-center text-gray-500 py-8">
-            No consultations found.
-          </p>
-        )}
+            <p><span className={gradientTextClass}>Contact: </span>{c.user?.email}</p>
+            <p><span className={gradientTextClass}>Time Slot: </span>{c.timeSlot}</p>
+            <p><span className={gradientTextClass}>Services: </span>{(c.services || []).join(', ')}</p>
+            <p><span className={gradientTextClass}>Handlers: </span>
+              {(c.handlers || []).map((h, idx) => (
+                <span key={idx} className="text-sm text-gray-700 block">{h.name || h.email}</span>
+              ))}
+            </p>
+            <p>
+              <span className={gradientTextClass}>Status: </span>
+              <span className={`ml-1 px-2 py-0.5 rounded-full text-xs font-semibold ${statusBadge[c.status]}`}>
+                {c.status}
+              </span>
+            </p>
+          </div>
+        ))}
       </div>
+
+      {/* Create Consultation Modal */}
+      <ConsultationModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+      />
+
+      {/* Edit/View Modal with Delete Option inside */}
+      {selectedConsultation && (
+        <ConsultationModalTabs
+          isOpen={true}
+          onClose={() => setSelectedConsultation(null)}
+          consultation={selectedConsultation}
+          onUpdate={fetchConsultations}
+          onDelete={fetchConsultations} // delete now triggered inside the modal
+        />
+      )}
     </div>
   );
 };

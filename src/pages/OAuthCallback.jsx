@@ -1,70 +1,62 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 
 const OAuthCallback = () => {
-  const location = useLocation();
+  const { checkAuthentication } = useAuth();
+  const { search } = useLocation();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const handleOAuthCallback = async () => {
-      const searchParams = new URLSearchParams(location.search);
-      const code = searchParams.get('code');
+    const handleOAuth = async () => {
+      const code = new URLSearchParams(search).get('code');
 
       if (!code) {
-        // Authorization code not found, redirect to homepage
         navigate('/');
         return;
       }
 
       try {
-        // Make a request to your backend to handle the OAuth callback
-        await axios.post(`${import.meta.env.VITE_API_URL}/auth/oauth/callback`, {
-          code, // Send the code in the request body
-        }, {
-          withCredentials: true, // Ensure cookies are sent with the request and set by backend
-        });
+        const response = await axios.post(
+          `${import.meta.env.VITE_API_URL}/auth/oauth/callback`,
+          { code },
+          { withCredentials: true }
+        );
 
-        // Redirect to settings or another page after successful login
-        navigate('/settings');
+        if (response.data.success) {
+          await checkAuthentication();
+          navigate('/dashboard');
+        } else {
+          throw new Error(response.data.message || 'OAuth failed');
+        }
       } catch (error) {
-        console.error('Error during OAuth callback:', error.response?.data || error.message);
-        navigate('/'); // Redirect to homepage if there's an issue
+        console.error('OAuth callback error:', error.response?.message || error.message);
+        navigate('/');
       } finally {
         setLoading(false);
       }
     };
 
-    handleOAuthCallback();
-  }, [location.search, navigate]);
+    handleOAuth();
+  }, [search, navigate]);
 
   return (
     <div className="flex justify-center items-center h-screen">
-      {loading ? (
-        <div className="flex flex-col items-center">
-          {/* Spinner */}
-          <svg className="animate-spin h-10 w-10 text-blue-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            ></circle>
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-            ></path>
-          </svg>
-          {/* Loading text */}
-          <p className="mt-4 text-lg text-center">Processing OAuth callback...</p>
-        </div>
-      ) : (
-        <p className="text-lg text-center">Redirecting...</p>
-      )}
+      <div className="flex flex-col items-center">
+        {loading ? (
+          <>
+            <svg className="animate-spin h-10 w-10 text-blue-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+            <p className="mt-4 text-lg text-center">Processing OAuth callback...</p>
+          </>
+        ) : (
+          <p className="text-lg text-center">Redirecting...</p>
+        )}
+      </div>
     </div>
   );
 };

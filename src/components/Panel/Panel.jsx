@@ -13,7 +13,7 @@ const Panel = () => {
   const [activeTab, setActiveTab] = useState('Dashboard');
 
   return (
-    <section className="pt-6 pb-6 bg-slate-50 min-h-screen">
+    <section className="pt-10 pb-6 bg-slate-50 min-h-screen">
       <Navbar/>
       <Wrapper>
         {/* Title and Description */}

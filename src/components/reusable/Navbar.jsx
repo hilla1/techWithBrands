@@ -11,7 +11,7 @@ import Cookies from 'js-cookie';
 
 const Navbar = () => { 
   const navigate = useNavigate(); 
-  useEffect(() => {Cookies.get('twb') === 'session' && navigate('/settings'); }, [navigate]);
+  useEffect(() => {Cookies.get('twb') === 'session' && navigate('/dashboard'); }, [navigate]);
   const { isMobileMenuOpen, toggleMobileMenu, isScrolled, visible } = useNavbar();
   const [openDropdown, setOpenDropdown] = useState(null);
   const [activeSubmenu, setActiveSubmenu] = useState(null);
