@@ -43,7 +43,7 @@ const ProtectedRoute = ({ children }) => {
       <div className="w-full h-screen flex flex-col items-center justify-center bg-white px-4 text-center">
         <div className="text-4xl font-semibold text-[#2E3191] mb-4">Connection Issue</div>
         <p className="text-lg text-gray-600 mb-6 max-w-md">
-          It seems you're connected, but we can't verify your session. Please check your internet connection and try again.
+          It seems you're connected, but we can't verify your session. Please check your internet connection and try reloading page.
         </p>
         <button
           onClick={() => window.location.reload()}

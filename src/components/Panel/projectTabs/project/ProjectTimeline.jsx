@@ -11,16 +11,17 @@ export default function ProjectTimeline({ projectPhases, milestones }) {
   const getStatusColor = (status) => {
     switch (status) {
       case "completed":
-        return "bg-emerald-100 text-emerald-800";
+        return "bg-emerald-50 text-emerald-700";
       case "active":
-        return "bg-blue-100 text-blue-800";
+        return "bg-blue-50 text-blue-700";
       default:
-        return "bg-gray-100 text-gray-600";
+        return "bg-gray-50 text-gray-600";
     }
   };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      {/* Project Timeline */}
       <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
         <h2 className="text-lg font-semibold text-gray-800 mb-6">Project Timeline</h2>
         <div className="relative">
@@ -49,7 +50,7 @@ export default function ProjectTimeline({ projectPhases, milestones }) {
                         phase.status === "completed"
                           ? "bg-emerald-400"
                           : phase.status === "active"
-                          ? "bg-blue-400"
+                          ? "bg-blue-300"
                           : "bg-gray-300"
                       }`}
                       style={{ width: `${phase.progress}%` }}
@@ -63,6 +64,7 @@ export default function ProjectTimeline({ projectPhases, milestones }) {
         </div>
       </div>
 
+      {/* Current Milestones */}
       <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
         <h2 className="text-lg font-semibold text-gray-800 mb-6">Current Milestones</h2>
         <div className="space-y-3">
@@ -76,7 +78,16 @@ export default function ProjectTimeline({ projectPhases, milestones }) {
                 </div>
               </div>
               <div className="w-full bg-gray-100 rounded-full h-1.5 mb-1">
-                <div className="h-1.5 rounded-full bg-blue-400" style={{ width: `${m.progress}%` }}></div>
+                <div
+                  className={`h-1.5 rounded-full ${
+                    m.status === "completed"
+                      ? "bg-emerald-400"
+                      : m.status === "active"
+                      ? "bg-blue-300"
+                      : "bg-gray-300"
+                  }`}
+                  style={{ width: `${m.progress}%` }}
+                ></div>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-xs text-gray-500">Progress</span>

@@ -30,10 +30,11 @@ export default function UploadModal({
   return (
     <ReusableModal isOpen={isOpen} onClose={onClose} title="Upload Files">
       <div className="pt-4 space-y-4 sm:pt-6 sm:space-y-6 w-full">
+
         {/* Drop zone */}
         <div
           {...getRootProps()}
-          className="border-2 border-dashed border-blue-400 p-4 sm:p-8 rounded-md cursor-pointer text-center bg-blue-50 hover:bg-blue-100 transition-colors"
+          className="border-2 border-dashed border-blue-400 p-4 sm:p-8 rounded-md cursor-pointer text-center bg-blue-50 hover:bg-gradient-to-r hover:from-blue-100 hover:to-orange-100 transition-colors"
         >
           <input {...getInputProps()} />
           <p className="text-sm text-gray-700">
@@ -44,12 +45,13 @@ export default function UploadModal({
 
         {/* Uploaded file list */}
         {uploadedFiles.length > 0 && (
-          <div className="text-sm text-blue-700 space-y-2 max-h-60 overflow-y-auto">
-            <h4 className="font-semibold">Selected Files:</h4>
+          <div className="text-sm text-gray-800 space-y-2 max-h-60 overflow-y-auto">
+            <h4 className="font-semibold text-blue-700">Selected Files:</h4>
+
             {uploadedFiles.map((file, idx) => (
               <div
                 key={idx}
-                className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white px-3 py-2 rounded shadow-sm border"
+                className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white px-3 py-2 rounded shadow-sm border border-gray-200"
               >
                 {editingIndex === idx ? (
                   <div className="w-full sm:flex-1 sm:mr-2 mb-2 sm:mb-0">
@@ -57,11 +59,11 @@ export default function UploadModal({
                       type="text"
                       value={editedName}
                       onChange={(e) => setEditedName(e.target.value)}
-                      className="w-full border rounded px-2 py-1 text-sm"
+                      className="w-full border rounded px-2 py-1 text-sm focus:ring-1 focus:ring-blue-400"
                     />
                   </div>
                 ) : (
-                  <p className="w-full sm:flex-1 truncate">{file.name}</p>
+                  <p className="w-full sm:flex-1 truncate text-gray-700">{file.name}</p>
                 )}
 
                 <div className="flex gap-2 mt-2 sm:mt-0 sm:ml-2">
@@ -76,7 +78,7 @@ export default function UploadModal({
                   ) : (
                     <button
                       onClick={() => handleEdit(idx, file.name)}
-                      className="text-gray-600 hover:text-gray-800"
+                      className="text-blue-500 hover:text-blue-700"
                       title="Rename"
                     >
                       <FiEdit />
@@ -100,7 +102,7 @@ export default function UploadModal({
         <div className="flex justify-end">
           <button
             onClick={onClose}
-            className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm font-medium"
+            className="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-blue-600 to-orange-500 text-white rounded hover:opacity-90 text-sm font-medium"
           >
             Attach
           </button>

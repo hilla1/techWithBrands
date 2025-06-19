@@ -18,11 +18,9 @@ export default function MessageForm({
   setUploadedFiles,
   cancelEdit,
 }) {
-  // Populate uploadedFiles if editing a message or reply with attachments
   useEffect(() => {
     const source = editingReply || editingMessage;
 
-    // Only set uploaded files if there are attachments and none currently loaded
     if (source?.attachments?.length && uploadedFiles.length === 0) {
       const convertedFiles = source.attachments.map((att) => {
         const byteArray = new Uint8Array(att.blob?.data || []);
@@ -36,7 +34,6 @@ export default function MessageForm({
     }
   }, [editingMessage, editingReply, uploadedFiles, setUploadedFiles]);
 
-  // Toggle form open/close and clear state
   const toggleForm = () => {
     setReplyTo?.(null);
     cancelEdit?.();
@@ -44,7 +41,6 @@ export default function MessageForm({
     setUploadedFiles([]);
   };
 
-  // Handle form submit
   const handleFormSubmit = async (data) => {
     await onSubmit(data);
     setIsOpen(false);
@@ -53,11 +49,10 @@ export default function MessageForm({
     setUploadedFiles([]);
   };
 
-  // Remove a file from uploadedFiles by index
   const handleRemoveFile = (index) => {
     const updatedFiles = uploadedFiles.filter((_, i) => i !== index);
     setUploadedFiles(updatedFiles);
-    removeFile?.(index); // optional: inform parent
+    removeFile?.(index);
   };
 
   return (
@@ -72,7 +67,6 @@ export default function MessageForm({
             transition={{ duration: 0.3 }}
             className="absolute bottom-16 right-0 w-full max-w-md bg-white border p-4 rounded-lg shadow-xl z-20"
           >
-            {/* Reply Info */}
             {replyTo && !editingMessage && !editingReply && (
               <p className="text-sm text-green-600 font-medium mb-1">
                 Replying to message #{replyTo}
@@ -86,7 +80,6 @@ export default function MessageForm({
               </p>
             )}
 
-            {/* Edit Message Info */}
             {editingMessage && !editingReply && (
               <p className="text-sm text-yellow-600 font-medium mb-1">
                 Editing message #{editingMessage.id}
@@ -100,7 +93,6 @@ export default function MessageForm({
               </p>
             )}
 
-            {/* Edit Reply Info */}
             {editingReply && (
               <p className="text-sm text-yellow-600 font-medium mb-1">
                 Editing reply #{editingReply.id}
@@ -114,27 +106,23 @@ export default function MessageForm({
               </p>
             )}
 
-            {/* Textarea Input */}
             <textarea
               {...register('message')}
               placeholder="Type a message..."
               defaultValue={
-                editingReply?.content ||
-                editingMessage?.content ||
-                ''
+                editingReply?.content || editingMessage?.content || ''
               }
-              className="border rounded p-2 resize-none text-sm w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="border rounded p-2 resize-none text-sm w-full focus:outline-none focus:ring-2 focus:ring-blue-300"
               rows={3}
               required
             />
 
-            {/* Attachment List */}
             {uploadedFiles?.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-2">
                 {uploadedFiles.map((file, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center bg-blue-50 text-blue-700 text-sm px-2 py-1 rounded shadow-sm"
+                    className="flex items-center bg-orange-50 text-orange-700 text-sm px-2 py-1 rounded shadow-sm"
                   >
                     <span className="truncate max-w-[150px]">{file.name}</span>
                     <button
@@ -150,9 +138,7 @@ export default function MessageForm({
               </div>
             )}
 
-            {/* Buttons */}
             <div className="flex justify-between items-center mt-3">
-              {/* Upload is now allowed for all cases */}
               <button
                 type="button"
                 onClick={() => setUploadOpen(true)}
@@ -163,7 +149,7 @@ export default function MessageForm({
 
               <button
                 type="submit"
-                className="px-4 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+                className="px-4 py-1 bg-gradient-to-r from-blue-600 to-orange-500 text-white rounded text-sm hover:opacity-90"
               >
                 {editingReply || editingMessage ? 'Update' : 'Send'}
               </button>
@@ -172,12 +158,11 @@ export default function MessageForm({
         )}
       </AnimatePresence>
 
-      {/* Floating Toggle Button */}
       <div className="flex justify-end mt-4 relative z-10">
         <button
           type="button"
           onClick={toggleForm}
-          className="bg-blue-600 text-white rounded-full p-3 shadow-md hover:bg-blue-700 transition-all"
+          className="bg-gradient-to-r from-blue-600 to-orange-500 text-white rounded-full p-3 shadow-md hover:opacity-90 transition-all"
           aria-label={isOpen ? 'Close form' : 'Open form'}
         >
           {isOpen ? <FiX className="w-5 h-5" /> : <FiPlus className="w-5 h-5" />}

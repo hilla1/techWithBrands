@@ -5,7 +5,7 @@ const ConfirmActionModal = ({ open, onClose, title, message, confirmText, onConf
   return (
     <ReusableModal isOpen={open} onClose={onClose}>
       <div>
-        <h2 className="text-xl mb-4 text-blue-900">{title}</h2>
+        <h2 className="text-xl mb-4 text-red-600">{title}</h2>
         <p>{message}</p>
         <div className="flex justify-end mt-4">
           <button
@@ -16,7 +16,7 @@ const ConfirmActionModal = ({ open, onClose, title, message, confirmText, onConf
           </button>
           <button
             onClick={onConfirm}
-            className="ml-2 px-4 py-2 bg-blue-900 text-white rounded hover:bg-blue-800"
+            className="ml-2 px-4 py-2 bg-red-700 text-white rounded hover:bg-red-500"
           >
             {confirmText}
           </button>

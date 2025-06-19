@@ -163,12 +163,12 @@ export default function CollaborationHub() {
     });
 
   const handleDeleteMessage = (id, payload = null) => {
-  if (id === 'update-replies' && Array.isArray(payload)) {
-    setMessages(payload);
-  } else if (id) {
-    setMessages((prev) => prev.filter((m) => m.id !== id));
-  }
-};
+    if (id === 'update-replies' && Array.isArray(payload)) {
+      setMessages(payload);
+    } else if (id) {
+      setMessages((prev) => prev.filter((m) => m.id !== id));
+    }
+  };
 
   const handleEditRequest = (message, parentId = null) => {
     setValue('message', message.content);
@@ -194,11 +194,14 @@ export default function CollaborationHub() {
     <div className="space-y-6 w-full">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4 border rounded shadow p-4 bg-white">
+          {/* Tab navigation */}
           <div className="flex space-x-2 border-b pb-2 shadow-sm">
             <button
               onClick={() => handleTabClick('chat')}
               className={`relative flex items-center gap-1 px-4 py-2 rounded font-semibold ${
-                activeTab === 'chat' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-blue-600'
+                activeTab === 'chat'
+                  ? 'bg-gradient-to-r from-blue-500 to-orange-400 text-white'
+                  : 'bg-gray-100 text-blue-700 hover:bg-blue-50'
               }`}
             >
               Team Chat
@@ -211,7 +214,9 @@ export default function CollaborationHub() {
             <button
               onClick={() => handleTabClick('files')}
               className={`relative flex items-center gap-1 px-4 py-2 rounded font-semibold ${
-                activeTab === 'files' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-blue-600'
+                activeTab === 'files'
+                  ? 'bg-gradient-to-r from-blue-500 to-orange-400 text-white'
+                  : 'bg-gray-100 text-blue-700 hover:bg-blue-50'
               }`}
             >
               Shared Files
@@ -268,14 +273,13 @@ export default function CollaborationHub() {
           />
         </div>
 
-        <div className=" w-full self-start h-auto">
-        <TeamMembers
-          teamMembers={teamMembers}
-          setInviteOpen={setInviteOpen}
-          setUploadOpen={setUploadOpen}
+        <div className="w-full self-start h-auto">
+          <TeamMembers
+            teamMembers={teamMembers}
+            setInviteOpen={setInviteOpen}
+            setUploadOpen={setUploadOpen}
           />
-          </div>
-
+        </div>
       </div>
 
       <InviteModal isOpen={inviteOpen} onClose={() => setInviteOpen(false)} register={register} />
@@ -296,7 +300,7 @@ export default function CollaborationHub() {
           <div className="flex justify-end mt-4">
             <button
               onClick={() => setAlertOpen(false)}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              className="px-4 py-2 bg-gradient-to-r from-blue-500 to-orange-400 text-white rounded hover:opacity-90"
             >
               OK
             </button>
