@@ -71,16 +71,7 @@ export default function FinalApproval() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
-      {/* Header */}
-      <div className="text-center">
-        <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-orange-500 to-yellow-500 mb-4">
-          Final Project Approval
-        </h1>
-        <p className="text-xl text-gray-600">
-          Review your completed project and provide final approval and feedback
-        </p>
-      </div>
-
+      
       {/* Sections */}
       <ProjectSummary summary={summary} />
       <ProjectDeliverables deliverables={deliverables} setPreview={setPreviewFile} />

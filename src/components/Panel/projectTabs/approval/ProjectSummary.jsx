@@ -5,7 +5,7 @@ export default function ProjectSummary({ summary }) {
   return (
     <div className="bg-white shadow-md rounded-2xl p-8 border border-gray-100">
       <h2 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-orange-500 to-yellow-500 mb-6">
-        Project Summary Overview
+        Project Overview
       </h2>
 
       {/* Project Info & Technologies */}
