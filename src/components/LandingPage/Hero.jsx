@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import Wrapper from '../reusable/Wrapper';
 import heroImage from '../../assets/heroimage3.png';
 import ConsultationModal from '../reusable/ConsultationModal'; 
+import RequirementsModal from '../../components/Panel/projectTabs/RequirementsModal';
 
 const Hero = () => {
   const [navbarHeight, setNavbarHeight] = useState(64);
-  const [isModalOpen, setModalOpen] = useState(false); 
+  const [isConsultationModalOpen, setConsultationModalOpen] = useState(false);
+  const [isGetStartedModalOpen, setGetStartedModalOpen] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -57,11 +59,13 @@ const Hero = () => {
 
               {/* Buttons */}
               <div className="flex flex-col sm:flex-row items-center sm:justify-center md:justify-start mt-6 space-y-4 sm:space-y-0 sm:space-x-4">
-                <button className="w-[200px] sm:w-[250px] md:w-[300px] py-2 bg-gradient-to-r from-white to-[#F89F2D] text-[#2E3191] font-semibold rounded-lg shadow-lg hover:from-[#f7e6c3] hover:to-[#f79e1b] transition duration-300 ease-in-out">
+                <button 
+                onClick={() => setGetStartedModalOpen(true)} 
+                className="w-[200px] sm:w-[250px] md:w-[300px] py-2 bg-gradient-to-r from-white to-[#F89F2D] text-[#2E3191] font-semibold rounded-lg shadow-lg hover:from-[#f7e6c3] hover:to-[#f79e1b] transition duration-300 ease-in-out">
                   Get Started
                 </button>
                 <button
-                  onClick={() => setModalOpen(true)} // Open modal
+                  onClick={() => setConsultationModalOpen(true)} 
                   className="w-[200px] sm:w-[250px] md:w-[300px] py-2 bg-transparent border-2 border-[#F89F2D] text-[#F89F2D] font-semibold rounded-lg hover:bg-[#F89F2D] hover:text-[#2E3191] transition duration-300 ease-in-out"
                 >
                   Book Consultation
@@ -118,7 +122,8 @@ const Hero = () => {
       </section>
 
       {/* Modal Component Render */}
-      <ConsultationModal isOpen={isModalOpen} onClose={() => setModalOpen(false)} />
+      <ConsultationModal isOpen={isConsultationModalOpen} onClose={() => setConsultationModalOpen(false)} />
+      <RequirementsModal isOpen={isGetStartedModalOpen} onClose={() => setGetStartedModalOpen(false)} />
     </>
   );
 };

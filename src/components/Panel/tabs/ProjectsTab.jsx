@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { FiMoreVertical, FiArrowLeft } from 'react-icons/fi';
+import { FiMoreVertical } from 'react-icons/fi';
 import ProjectDashboard from '../projectTabs/ProjectDashboard';
+import RequirementsModal from '../projectTabs/RequirementsModal';
 
 const ProjectsTab = () => {
   const [selectedProject, setSelectedProject] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterProgress, setFilterProgress] = useState('All');
+  const [isModalOpen, setIsModalOpen] = useState(false); 
 
   const projects = [
     {
@@ -14,11 +16,7 @@ const ProjectsTab = () => {
       client: 'ABC Corp',
       progress: 80,
       status: 'active',
-      teamMembers: [
-        "Sarah Chen (Lead Developer)",
-        "Mike Johnson (UI/UX Designer)",
-        "Emily Davis (Backend Developer)"
-      ]
+      teamMembers: ["Sarah Chen (Lead Developer)", "Mike Johnson (UI/UX Designer)", "Emily Davis (Backend Developer)"]
     },
     {
       id: 2,
@@ -26,10 +24,7 @@ const ProjectsTab = () => {
       client: 'XYZ Ltd',
       progress: 45,
       status: 'active',
-      teamMembers: [
-        "Sarah Chen (Lead Developer)",
-        "Mike Johnson (UI/UX Designer)"
-      ]
+      teamMembers: ["Sarah Chen (Lead Developer)", "Mike Johnson (UI/UX Designer)"]
     },
     {
       id: 3,
@@ -37,9 +32,7 @@ const ProjectsTab = () => {
       client: 'FooBar Inc',
       progress: 100,
       status: 'completed',
-      teamMembers: [
-        "Emily Davis (Backend Developer)"
-      ]
+      teamMembers: ["Emily Davis (Backend Developer)"]
     },
     {
       id: 4,
@@ -47,10 +40,7 @@ const ProjectsTab = () => {
       client: 'StartupX',
       progress: 20,
       status: 'active',
-      teamMembers: [
-        "Mike Johnson (UI/UX Designer)",
-        "Emily Davis (Backend Developer)"
-      ]
+      teamMembers: ["Mike Johnson (UI/UX Designer)", "Emily Davis (Backend Developer)"]
     },
   ];
 
@@ -110,7 +100,10 @@ const ProjectsTab = () => {
         </div>
 
         <div className="w-full md:w-auto">
-          <button className="w-full md:w-auto bg-gradient-to-r from-[#bfc9ff] to-[#ffe4c2] text-gray-800 px-6 py-2 rounded-md font-semibold hover:opacity-90 transition text-sm shadow-sm">
+          <button
+            onClick={() => setIsModalOpen(true)} // ✅ Open modal on click
+            className="w-full md:w-auto bg-gradient-to-r from-[#bfc9ff] to-[#ffe4c2] text-gray-800 px-6 py-2 rounded-md font-semibold hover:opacity-90 transition text-sm shadow-sm"
+          >
             + Add New Project
           </button>
         </div>
@@ -151,6 +144,12 @@ const ProjectsTab = () => {
           <p className="text-center py-8 text-gray-500">No projects found.</p>
         )}
       </div>
+
+      {/* ✅ Requirements Modal */}
+      <RequirementsModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 };
