@@ -1,8 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FiCreditCard } from "react-icons/fi";
-import { FaPaypal, FaStripe, FaMobileAlt } from "react-icons/fa";
-import StripeFields from "./StripeFields";
+import { FaPaypal, FaMobileAlt } from "react-icons/fa";
 import MpesaFields from "./MpesaFields";
 import PaypalNote from "./PaypalNote";
 import { paymentSchema } from "./schemas";
@@ -15,28 +14,27 @@ export default function PaymentForm({ selectedPlan, onSubmit, onBack }) {
     formState: { errors },
   } = useForm({
     resolver: zodResolver(paymentSchema),
-    defaultValues: { paymentMethod: "stripe" },
+    defaultValues: { paymentMethod: "paypal" }, 
   });
 
   const paymentMethod = watch("paymentMethod");
 
   const methodOptions = [
     {
-      id: "stripe",
-      label: "Credit/Debit Card",
-      icon: <FaStripe className="text-[#635bff] w-5 h-5" />,
+      id: "paypal",
+      label: "Credit/Debit Card / PayPal",
+      icon: <FaPaypal className="text-[#003087] w-5 h-5" />,
     },
     {
       id: "mpesa",
       label: "M-Pesa",
       icon: <FaMobileAlt className="text-green-600 w-5 h-5" />,
     },
-    {
-      id: "paypal",
-      label: "PayPal",
-      icon: <FaPaypal className="text-[#003087] w-5 h-5" />,
-    },
   ];
+
+  const planName = selectedPlan?.name || "Selected";
+  const planPrice = selectedPlan?.price || "$0";
+  const planPeriod = selectedPlan?.period || "";
 
   return (
     <div className="bg-white rounded-xl max-w-3xl mx-auto px-4 sm:px-6 py-8 border border-gray-100">
@@ -49,7 +47,7 @@ export default function PaymentForm({ selectedPlan, onSubmit, onBack }) {
           </h2>
         </div>
         <p className="text-sm text-gray-500">
-          Subscribe to the <strong>{selectedPlan.name}</strong> plan
+          Subscribe to the <strong>{planName}</strong> plan
         </p>
       </div>
 
@@ -58,15 +56,15 @@ export default function PaymentForm({ selectedPlan, onSubmit, onBack }) {
         <div className="flex justify-between flex-col sm:flex-row gap-4 sm:gap-0">
           <div>
             <h3 className="font-semibold text-gray-800 text-base sm:text-lg">
-              {selectedPlan.name} Plan
+              {planName} Plan
             </h3>
-            <p className="text-sm text-gray-500">{selectedPlan.description}</p>
+            <p className="text-sm text-gray-500">{selectedPlan?.description || "Custom project plan"}</p>
           </div>
           <div className="text-right">
             <div className="text-xl sm:text-2xl font-bold text-gray-800">
-              {selectedPlan.price}
+              {planPrice}
               <span className="text-sm font-normal text-gray-500">
-                {selectedPlan.period}
+                {planPeriod}
               </span>
             </div>
           </div>
@@ -80,7 +78,7 @@ export default function PaymentForm({ selectedPlan, onSubmit, onBack }) {
           <label className="block font-medium text-gray-700 mb-1">
             Payment Method
           </label>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {methodOptions.map((option) => (
               <label
                 key={option.id}
@@ -107,13 +105,12 @@ export default function PaymentForm({ selectedPlan, onSubmit, onBack }) {
         </div>
 
         {/* Conditional Fields */}
-        {paymentMethod === "stripe" && (
-          <StripeFields register={register} errors={errors} />
+        {paymentMethod === "paypal" && (
+          <PaypalNote selectedPlan={selectedPlan} />
         )}
         {paymentMethod === "mpesa" && (
           <MpesaFields register={register} errors={errors} />
         )}
-        {paymentMethod === "paypal" && <PaypalNote />}
 
         {/* Action Buttons */}
         <div className="flex justify-between items-center pt-4">
@@ -129,8 +126,8 @@ export default function PaymentForm({ selectedPlan, onSubmit, onBack }) {
             className="px-6 py-3 bg-gradient-to-r from-[#2E3191] to-[#F89F2D] text-white font-semibold rounded-md hover:opacity-90 transition"
           >
             {paymentMethod === "paypal"
-              ? "Proceed with PayPal"
-              : `Complete Payment – ${selectedPlan.price}${selectedPlan.period}`}
+              ? "Pay with Card or PayPal"
+              : `Complete Payment – ${planPrice}${planPeriod}`}
           </button>
         </div>
       </form>

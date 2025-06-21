@@ -138,7 +138,7 @@ const LoginModal = ({ isOpen, onClose }) => {
             <div className="text-right mb-4">
               <button
                 type="button"
-                className="text-[#F89F2D] font-bold hover:text-orange-600"
+                className="text-[#F89F2D] font-bold hover:text-orange-500"
                 onClick={handleForgotPassword}
               >
                 Forgot Password?

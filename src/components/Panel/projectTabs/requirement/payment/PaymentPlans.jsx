@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { FiCheck, FiStar } from "react-icons/fi";
 
-// Map of keywords to feature suggestions
+// Map keywords to suggested features
 const keywordFeaturesMap = [
   { keywords: ["api", "backend", "integration"], feature: "Robust API Support" },
   { keywords: ["mobile", "android", "ios"], feature: "Cross-platform Mobile Support" },
@@ -13,7 +13,7 @@ const keywordFeaturesMap = [
   { keywords: ["analytics", "metrics", "reports"], feature: "Custom Analytics & Reporting" },
 ];
 
-// Extract dynamic features from description and custom list
+// Extract relevant features based on keywords
 const extractRelevantFeatures = (description = "", features = []) => {
   const matched = new Set();
   const combinedText = [description, ...(features || [])].join(" ").toLowerCase();
@@ -32,7 +32,7 @@ const extractRelevantFeatures = (description = "", features = []) => {
   return Array.from(matched);
 };
 
-// Tailored plan descriptions by project type
+// Get plan descriptions by project type
 const getPlanDescription = (type, plan) => {
   const fallback = {
     Basic: "Essential features for small projects",
@@ -128,18 +128,20 @@ export default function PaymentPlans({
     const plans = [basic, pro, premium];
     setPlansToRender(plans);
     setAvailablePlans(plans);
-    if (!selectedPlan) setSelectedPlan("Pro");
+
+    // Set default plan as full object
+    if (!selectedPlan) setSelectedPlan(pro);
   }, [projectData, featuresData, selectedPlan, setSelectedPlan, setAvailablePlans]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {plansToRender.map((plan) => {
-        const isSelected = selectedPlan === plan.name;
+        const isSelected = selectedPlan?.name === plan.name;
 
         return (
           <div
             key={plan.name}
-            onClick={() => setSelectedPlan(plan.name)}
+            onClick={() => setSelectedPlan(plan)}
             className={`relative cursor-pointer border rounded-xl p-6 transition-all duration-300
               bg-white hover:ring-2 hover:ring-[#2E3191]/30
               ${isSelected ? "ring-2 ring-[#2E3191]" : ""}
