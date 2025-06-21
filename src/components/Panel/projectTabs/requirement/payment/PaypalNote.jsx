@@ -3,7 +3,7 @@ import axios from "axios";
 import { useState } from "react";
 import { useAuth } from "../../../../../context/AuthContext";
 
-export default function PaypalNote({ selectedPlan }) {
+export default function PaypalNote({ selectedPlan, onBack, onSubmit }) {
   const [{ isPending }] = usePayPalScriptReducer();
   const [paid, setPaid] = useState(false);
   const [error, setError] = useState(null);
@@ -50,6 +50,9 @@ export default function PaypalNote({ selectedPlan }) {
 
       if (res.data?.status === "COMPLETED") {
         setPaid(true);
+        if (typeof onSubmit === "function") {
+          onSubmit(); // 🔔 Call global onSubmit after successful payment
+        }
       } else {
         setError("⚠️ Payment was not completed");
       }
@@ -60,61 +63,77 @@ export default function PaypalNote({ selectedPlan }) {
   };
 
   return (
-    <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-md text-sm text-yellow-800">
-      <p className="mb-3">
-        You can pay securely using your <strong>Credit or Debit Card</strong> or a <strong>PayPal account</strong> below.
+    <div className="bg-white border rounded-lg p-6 shadow-sm">
+      <p className="mb-4 text-gray-700 text-sm leading-relaxed">
+        Pay securely using your <strong>Credit or Debit Card</strong> or a <strong>PayPal account</strong> below for the <strong>{planName}</strong> plan.
       </p>
 
-      {isPending && <p className="text-gray-500">⚙️ Loading payment options...</p>}
+      {isPending && (
+        <p className="text-sm text-gray-500">⚙️ Loading payment options...</p>
+      )}
 
       {!paid && (
         <>
-          {/* PayPal Button (PayPal Account) */}
           <div className="mb-4">
-            <PayPalButtons
-              fundingSource={FUNDING.PAYPAL}
-              style={{
-                layout: "horizontal",
-                label: "paypal",
-              }}
-              createOrder={createOrder}
-              onApprove={handleApproval}
-              onError={(err) => {
-                setError("❌ PayPal error occurred");
-                console.error("PayPal Button Error:", err);
-              }}
-            />
+            <label className="block text-sm font-medium text-gray-600 mb-2">
+              Pay via PayPal Account
+            </label>
+            <div className="border border-gray-300 rounded-md p-2">
+              <PayPalButtons
+                fundingSource={FUNDING.PAYPAL}
+                style={{ layout: "horizontal", label: "paypal" }}
+                createOrder={createOrder}
+                onApprove={handleApproval}
+                onError={(err) => {
+                  setError("❌ PayPal error occurred");
+                  console.error("PayPal Button Error:", err);
+                }}
+              />
+            </div>
           </div>
 
-          {/* Card Button via PayPal */}
           <div>
-            <PayPalButtons
-              fundingSource={FUNDING.CARD}
-              style={{
-                layout: "horizontal",
-                label: "pay",
-                height: 45,
-              }}
-              createOrder={createOrder}
-              onApprove={handleApproval}
-              onError={(err) => {
-                setError("❌ Card payment error occurred");
-                console.error("Card Payment Error:", err);
-              }}
-            />
+            <label className="block text-sm font-medium text-gray-600 mb-2">
+              Pay via Credit or Debit Card
+            </label>
+            <div className="border border-gray-300 rounded-md p-2">
+              <PayPalButtons
+                fundingSource={FUNDING.CARD}
+                style={{ layout: "horizontal", label: "pay", height: 45 }}
+                createOrder={createOrder}
+                onApprove={handleApproval}
+                onError={(err) => {
+                  setError("❌ Card payment error occurred");
+                  console.error("Card Payment Error:", err);
+                }}
+              />
+            </div>
           </div>
         </>
       )}
 
       {paid && (
-        <div className="mt-3 text-green-600 font-medium">
-          ✅ Payment complete. Thank you!
+        <div className="mt-4 p-3 bg-green-50 border border-green-300 text-green-700 rounded text-sm font-medium">
+          ✅ Payment successful. Thank you for subscribing!
         </div>
       )}
 
       {error && (
-        <div className="mt-3 text-red-600 font-medium">{error}</div>
+        <div className="mt-4 p-3 bg-red-50 border border-red-300 text-red-700 rounded text-sm font-medium">
+          {error}
+        </div>
       )}
+
+      {/* Back Button */}
+      <div className="pt-6">
+        <button
+          type="button"
+          onClick={onBack}
+          className="px-5 py-2 rounded-md text-gray-700 bg-gray-200 hover:opacity-80"
+        >
+          ← Back
+        </button>
+      </div>
     </div>
   );
 }
