@@ -1,67 +1,48 @@
-import { useState, useEffect } from "react";
+import { useState, useRef } from "react";
 import { useAuth } from "../../../../../context/AuthContext";
 import axios from "axios";
-import { FaSpinner } from "react-icons/fa";
+import io from "socket.io-client";
+import {
+  FaSpinner,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaExclamationTriangle,
+} from "react-icons/fa";
 
-export default function MpesaFields({ register, errors, onBack, selectedPlan }) {
-  const [processing, setProcessing] = useState(false);
-  const [paymentStatus, setPaymentStatus] = useState(null); // 'pending', 'success', 'failed', 'cancelled'
+export default function MpesaFields({ register, errors, onBack, selectedPlan, onSuccess }) {
+  const [status, setStatus] = useState("idle");
   const [checkoutRequestId, setCheckoutRequestId] = useState(null);
-  const [pollingCount, setPollingCount] = useState(0);
+  const [amount, setAmount] = useState(0);
+  const [waitingMessage, setWaitingMessage] = useState("");
+  const socketRef = useRef(null);
   const { backend } = useAuth();
 
-  // Poll for payment status
-  useEffect(() => {
-    if (!checkoutRequestId || pollingCount === 0) return;
-
-    const pollInterval = setInterval(async () => {
-      try {
-        const { data } = await axios.get(`${backend}/mpesa/transaction-status`, {
-          params: { checkoutRequestId }
-        });
-
-        if (data.status === 'Completed') {
-          setPaymentStatus('success');
-          clearInterval(pollInterval);
-        } else if (data.status === 'Cancelled') {
-          setPaymentStatus('cancelled');
-          clearInterval(pollInterval);
-        } else if (pollingCount >= 12) { // Stop after 2 minutes (12*10s)
-          setPaymentStatus('timeout');
-          clearInterval(pollInterval);
-        }
-        setPollingCount(prev => prev + 1);
-      } catch (err) {
-        console.error("Polling error:", err);
-        if (pollingCount >= 12) {
-          setPaymentStatus('timeout');
-          clearInterval(pollInterval);
-        }
-      }
-    }, 10000); // Check every 10 seconds
-
-    return () => clearInterval(pollInterval);
-  }, [checkoutRequestId, pollingCount, backend]);
+  const convertToKES = async (usdAmount) => {
+    try {
+      const { data: rateRes } = await axios.get(`${backend}/exchange/usd-to-kes`);
+      return Math.round(usdAmount * (rateRes?.rate || 150));
+    } catch (err) {
+      console.error("Conversion error:", err);
+      return Math.round(usdAmount * 150);
+    }
+  };
 
   const handleMpesaPayment = async (e) => {
     e.preventDefault();
-    setProcessing(true);
-    setPaymentStatus('pending');
-    setPollingCount(1);
-
-    const formData = new FormData(e.target);
-    const phone = formData.get("phone");
+    const phone = e.target.phone.value;
 
     if (!phone || !/^0\d{9}$/.test(phone)) {
-      setPaymentStatus('failed');
-      setProcessing(false);
+      setStatus("failed");
       return;
     }
 
     try {
+      setStatus("sending");
+      setWaitingMessage("Waiting for you to enter your M-Pesa PIN...");
+
       const usdAmount = parseFloat(selectedPlan?.price?.replace(/[^0-9.]/g, "")) || 1;
-      const { data: rateRes } = await axios.get(`${backend}/exchange/usd-to-kes`);
-      const kesAmount = Math.round(usdAmount * (rateRes?.rate || 150));
+      const kesAmount = await convertToKES(usdAmount);
+      setAmount(kesAmount);
 
       const { data } = await axios.post(`${backend}/mpesa/stk-push`, {
         phone,
@@ -69,59 +50,126 @@ export default function MpesaFields({ register, errors, onBack, selectedPlan }) 
       });
 
       if (data.success) {
-        setCheckoutRequestId(data.data.CheckoutRequestID);
+        const requestId = data.data.CheckoutRequestID;
+        setCheckoutRequestId(requestId);
+        setStatus("waiting");
+
+        if (!socketRef.current) {
+          socketRef.current = io(backend, {
+            transports: ["websocket"],
+            withCredentials: true,
+          });
+
+          socketRef.current.on("connect", () => {
+            socketRef.current.emit("join", requestId); // 🔁 Correct event name to match backend
+          });
+
+          // Listen to the same event the backend emits:
+          socketRef.current.on("statusUpdate", (payload) => {
+            if (payload.checkoutRequestID !== requestId) return;
+
+            const code = payload.resultCode;
+            const statusMap = {
+              0: "success",
+              1: "insufficient",
+              1032: "failed",
+              2001: "timeout",
+            };
+
+            const resolvedStatus = statusMap[code] || "failed";
+            setStatus(resolvedStatus);
+
+            if (resolvedStatus === "success") {
+              setTimeout(() => onSuccess?.(kesAmount), 2000);
+            }
+
+            // Cleanup
+            socketRef.current?.disconnect();
+            socketRef.current = null;
+          });
+        }
       } else {
-        throw new Error(data.message || "Payment initiation failed.");
+        throw new Error(data.message || "Payment initiation failed");
       }
     } catch (err) {
-      console.error("Mpesa Error:", err);
-      setPaymentStatus('failed');
-      setProcessing(false);
+      console.error("Payment Error:", err);
+      const msg = err.response?.data?.message?.toLowerCase() || "";
+      setStatus(msg.includes("insufficient") ? "insufficient" : "failed");
     }
   };
 
   const resetPayment = () => {
-    setProcessing(false);
-    setPaymentStatus(null);
+    setStatus("idle");
     setCheckoutRequestId(null);
-    setPollingCount(0);
+    setWaitingMessage("");
+    socketRef.current?.disconnect();
+    socketRef.current = null;
   };
 
-  const statusMessages = {
-    pending: "Enter your M-Pesa PIN to complete payment...",
-    success: "✅ Payment completed successfully!",
-    failed: "❌ Payment failed. Please try again.",
-    cancelled: "❌ Payment was cancelled.",
-    timeout: "⌛ Payment timed out. Check your M-Pesa messages."
+  const statusConfig = {
+    sending: {
+      icon: <FaSpinner className="animate-spin text-4xl text-blue-500" />,
+      message: "Sending payment request to your phone...",
+      showAction: false,
+    },
+    waiting: {
+      icon: <FaSpinner className="animate-spin text-4xl text-blue-500" />,
+      message: waitingMessage,
+      showAction: false,
+    },
+    success: {
+      icon: <FaCheckCircle className="text-4xl text-green-500" />,
+      message: `Payment of KES ${amount} successful!`,
+      showAction: true,
+      actionText: "Continue",
+    },
+    failed: {
+      icon: <FaTimesCircle className="text-4xl text-red-500" />,
+      message: "Payment failed or was cancelled. Please try again.",
+      showAction: true,
+      actionText: "Try Again",
+    },
+    timeout: {
+      icon: <FaTimesCircle className="text-4xl text-yellow-500" />,
+      message: "Payment timed out. Please check your phone.",
+      showAction: true,
+      actionText: "Retry",
+    },
+    insufficient: {
+      icon: <FaExclamationTriangle className="text-4xl text-orange-500" />,
+      message: (
+        <div className="text-center">
+          <p>Insufficient M-Pesa balance for KES {amount} payment.</p>
+          <p className="mt-2 font-semibold">Please top up and try again.</p>
+        </div>
+      ),
+      showAction: true,
+      actionText: "Try Again After Top Up",
+    },
   };
 
   return (
     <form onSubmit={handleMpesaPayment} className="space-y-6 mt-4 relative">
-      {/* Loading Overlay */}
-      {processing && (
-        <div className="absolute inset-0 bg-white bg-opacity-80 flex flex-col items-center justify-center z-10">
-          <FaSpinner className="animate-spin text-4xl text-[#2E3191] mb-4" />
-          <p className="text-lg font-medium">
-            {paymentStatus === 'pending' 
-              ? "Waiting for payment confirmation..." 
-              : statusMessages[paymentStatus]}
-          </p>
-          {(paymentStatus === 'success' || 
-            paymentStatus === 'failed' || 
-            paymentStatus === 'cancelled' ||
-            paymentStatus === 'timeout') && (
+      {status !== "idle" && (
+        <div className="absolute inset-0 bg-white bg-opacity-90 flex flex-col items-center justify-center z-10 p-4">
+          {statusConfig[status].icon}
+          <div className="text-lg font-medium text-center mt-4">
+            {statusConfig[status].message}
+          </div>
+          {statusConfig[status].showAction && (
             <button
               type="button"
-              onClick={resetPayment}
-              className="mt-4 px-4 py-2 bg-[#2E3191] text-white rounded-md"
+              onClick={status === "success" ? () => onSuccess?.(amount) : resetPayment}
+              className={`mt-6 px-6 py-2 text-white rounded-md hover:opacity-90 ${
+                status === "insufficient" ? "bg-orange-500" : "bg-[#2E3191]"
+              }`}
             >
-              {paymentStatus === 'success' ? 'Continue' : 'Try Again'}
+              {statusConfig[status].actionText}
             </button>
           )}
         </div>
       )}
 
-      {/* Phone Input (disabled during processing) */}
       <div>
         <label className="block font-medium text-gray-700 mb-1">
           M-Pesa Phone Number
@@ -132,29 +180,27 @@ export default function MpesaFields({ register, errors, onBack, selectedPlan }) 
           placeholder="0712345678"
           {...register("phone")}
           className="w-full border border-gray-300 rounded-md px-4 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2E3191]"
-          disabled={processing}
+          disabled={status !== "idle"}
         />
         {errors?.phone && (
           <p className="text-red-600 text-sm mt-1">{errors.phone.message}</p>
         )}
       </div>
 
-      {/* Buttons */}
       <div className="flex justify-between items-center pt-2">
         <button
           type="button"
           onClick={onBack}
-          disabled={processing}
+          disabled={status !== "idle"}
           className="px-5 py-2 rounded-md text-gray-700 bg-gray-200 hover:opacity-80 disabled:opacity-50"
         >
           ← Back
         </button>
-
         <button
           type="submit"
-          disabled={processing}
+          disabled={status !== "idle"}
           className={`px-6 py-3 font-semibold text-white rounded-md transition ${
-            processing
+            status !== "idle"
               ? "bg-gray-400 cursor-not-allowed"
               : "bg-gradient-to-r from-[#2E3191] to-[#F89F2D] hover:opacity-90"
           }`}
