@@ -1,71 +1,127 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../../../../../context/AuthContext";
 import axios from "axios";
+import { FaSpinner } from "react-icons/fa";
 
 export default function MpesaFields({ register, errors, onBack, selectedPlan }) {
   const [processing, setProcessing] = useState(false);
-  const [success, setSuccess] = useState(null);
-  const [error, setError] = useState(null);
+  const [paymentStatus, setPaymentStatus] = useState(null); // 'pending', 'success', 'failed', 'cancelled'
+  const [checkoutRequestId, setCheckoutRequestId] = useState(null);
+  const [pollingCount, setPollingCount] = useState(0);
   const { backend } = useAuth();
+
+  // Poll for payment status
+  useEffect(() => {
+    if (!checkoutRequestId || pollingCount === 0) return;
+
+    const pollInterval = setInterval(async () => {
+      try {
+        const { data } = await axios.get(`${backend}/mpesa/transaction-status`, {
+          params: { checkoutRequestId }
+        });
+
+        if (data.status === 'Completed') {
+          setPaymentStatus('success');
+          clearInterval(pollInterval);
+        } else if (data.status === 'Cancelled') {
+          setPaymentStatus('cancelled');
+          clearInterval(pollInterval);
+        } else if (pollingCount >= 12) { // Stop after 2 minutes (12*10s)
+          setPaymentStatus('timeout');
+          clearInterval(pollInterval);
+        }
+        setPollingCount(prev => prev + 1);
+      } catch (err) {
+        console.error("Polling error:", err);
+        if (pollingCount >= 12) {
+          setPaymentStatus('timeout');
+          clearInterval(pollInterval);
+        }
+      }
+    }, 10000); // Check every 10 seconds
+
+    return () => clearInterval(pollInterval);
+  }, [checkoutRequestId, pollingCount, backend]);
 
   const handleMpesaPayment = async (e) => {
     e.preventDefault();
     setProcessing(true);
-    setError(null);
-    setSuccess(null);
+    setPaymentStatus('pending');
+    setPollingCount(1);
 
     const formData = new FormData(e.target);
     const phone = formData.get("phone");
 
-    // Validate phone number format
     if (!phone || !/^0\d{9}$/.test(phone)) {
-      setError("❌ Enter a valid Safaricom number starting with 07 or 01");
+      setPaymentStatus('failed');
       setProcessing(false);
       return;
     }
 
     try {
-      // Get USD amount from selected plan
       const usdAmount = parseFloat(selectedPlan?.price?.replace(/[^0-9.]/g, "")) || 1;
-
-      // Fetch exchange rate from backend
       const { data: rateRes } = await axios.get(`${backend}/exchange/usd-to-kes`);
-      const kesRate = rateRes?.rate;
+      const kesAmount = Math.round(usdAmount * (rateRes?.rate || 150));
 
-      if (!kesRate) {
-        throw new Error("Exchange rate not available.");
-      }   
-
-      // Convert USD to KES and round to nearest whole number
-      const kesAmount = Math.round(usdAmount * kesRate);
-      console.log(kesAmount);
-
-      // Send M-Pesa STK push
       const { data } = await axios.post(`${backend}/mpesa/stk-push`, {
         phone,
         amount: kesAmount,
       });
 
       if (data.success) {
-        setSuccess("✅ Payment initiated successfully. Complete it on your phone.");
+        setCheckoutRequestId(data.data.CheckoutRequestID);
       } else {
         throw new Error(data.message || "Payment initiation failed.");
       }
     } catch (err) {
       console.error("Mpesa Error:", err);
-      const errorMsg =
-        err?.response?.data?.message ||
-        err.message ||
-        "Failed to process Mpesa payment.";
-      setError("❌ " + errorMsg);
-    } finally {
+      setPaymentStatus('failed');
       setProcessing(false);
     }
   };
 
+  const resetPayment = () => {
+    setProcessing(false);
+    setPaymentStatus(null);
+    setCheckoutRequestId(null);
+    setPollingCount(0);
+  };
+
+  const statusMessages = {
+    pending: "Enter your M-Pesa PIN to complete payment...",
+    success: "✅ Payment completed successfully!",
+    failed: "❌ Payment failed. Please try again.",
+    cancelled: "❌ Payment was cancelled.",
+    timeout: "⌛ Payment timed out. Check your M-Pesa messages."
+  };
+
   return (
-    <form onSubmit={handleMpesaPayment} className="space-y-6 mt-4">
-      {/* Phone Input */}
+    <form onSubmit={handleMpesaPayment} className="space-y-6 mt-4 relative">
+      {/* Loading Overlay */}
+      {processing && (
+        <div className="absolute inset-0 bg-white bg-opacity-80 flex flex-col items-center justify-center z-10">
+          <FaSpinner className="animate-spin text-4xl text-[#2E3191] mb-4" />
+          <p className="text-lg font-medium">
+            {paymentStatus === 'pending' 
+              ? "Waiting for payment confirmation..." 
+              : statusMessages[paymentStatus]}
+          </p>
+          {(paymentStatus === 'success' || 
+            paymentStatus === 'failed' || 
+            paymentStatus === 'cancelled' ||
+            paymentStatus === 'timeout') && (
+            <button
+              type="button"
+              onClick={resetPayment}
+              className="mt-4 px-4 py-2 bg-[#2E3191] text-white rounded-md"
+            >
+              {paymentStatus === 'success' ? 'Continue' : 'Try Again'}
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Phone Input (disabled during processing) */}
       <div>
         <label className="block font-medium text-gray-700 mb-1">
           M-Pesa Phone Number
@@ -83,26 +139,13 @@ export default function MpesaFields({ register, errors, onBack, selectedPlan }) 
         )}
       </div>
 
-      {/* Error Message */}
-      {error && (
-        <div className="bg-red-50 border border-red-300 text-red-700 rounded-md px-4 py-2 text-sm font-medium">
-          {error}
-        </div>
-      )}
-
-      {/* Success Message */}
-      {success && (
-        <div className="bg-green-50 border border-green-300 text-green-700 rounded-md px-4 py-2 text-sm font-medium">
-          {success}
-        </div>
-      )}
-
       {/* Buttons */}
       <div className="flex justify-between items-center pt-2">
         <button
           type="button"
           onClick={onBack}
-          className="px-5 py-2 rounded-md text-gray-700 bg-gray-200 hover:opacity-80"
+          disabled={processing}
+          className="px-5 py-2 rounded-md text-gray-700 bg-gray-200 hover:opacity-80 disabled:opacity-50"
         >
           ← Back
         </button>
@@ -116,7 +159,7 @@ export default function MpesaFields({ register, errors, onBack, selectedPlan }) 
               : "bg-gradient-to-r from-[#2E3191] to-[#F89F2D] hover:opacity-90"
           }`}
         >
-          {processing ? "Processing..." : "Pay with M-Pesa"}
+          Pay with M-Pesa
         </button>
       </div>
     </form>
