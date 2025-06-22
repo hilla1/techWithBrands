@@ -30,6 +30,7 @@ export default function MpesaFields({ selectedPlan, onBack, onSuccess }) {
         setAmount(Math.round(usd * (data?.rate || 150)));
       } catch {
         setAmount(Math.round((parseFloat(selectedPlan.price.replace(/[^0-9.]/g, "")) || 1) * 150));
+        setAmount(1);
       } finally {
         setIsCalculating(false);
       }
@@ -79,7 +80,7 @@ export default function MpesaFields({ selectedPlan, onBack, onSuccess }) {
   useEffect(() => {
     if (status !== "waiting" || !checkoutRequestId) return;
 
-    const maxAttempts = 5;
+    const maxAttempts = 4;
     const interval = 10000;
     let attempts = 0;
 
