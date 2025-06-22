@@ -86,12 +86,12 @@ export default function MpesaFields({ register, errors, onBack, selectedPlan, on
           params: { checkoutRequestId },
         });
 
-        const resultDesc = data?.rawData?.Body?.stkCallback?.ResultDesc;
-        const resultCode = data?.rawData?.Body?.stkCallback?.ResultCode;
+        const resultDesc = data?.rawData?.callback?.Body?.stkCallback?.ResultDesc;
+        const resultCode = data?.rawData?.callback?.Body?.stkCallback?.ResultCode;
 
         setCallbackDetails({ message: resultDesc || data.message, details: data });
 
-        if (resultDesc) {
+        if (resultDesc !== undefined) {
           clearInterval(intervalId);
 
           if (data.success && data.status === "Completed" && resultCode === 0) {
@@ -184,9 +184,9 @@ export default function MpesaFields({ register, errors, onBack, selectedPlan, on
             {statusConfig[status]?.message}
           </p>
 
-          {callbackDetails?.details?.rawData?.Body?.stkCallback?.ResultDesc && (
+          {callbackDetails?.details?.rawData?.callback?.Body?.stkCallback?.ResultDesc && (
             <p className="text-sm text-gray-600 mt-2">
-              {callbackDetails.details.rawData.Body.stkCallback.ResultDesc}
+              {callbackDetails.details.rawData.callback.Body.stkCallback.ResultDesc}
             </p>
           )}
 
