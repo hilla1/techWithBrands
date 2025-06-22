@@ -79,7 +79,7 @@ export default function MpesaFields({ register, errors, onBack, selectedPlan, on
   useEffect(() => {
     if (status !== "waiting" || !checkoutRequestId) return;
 
-    const maxAttempts = 4;
+    const maxAttempts = 5;
     const interval = 10000;
     let attempts = 0;
 
@@ -92,7 +92,11 @@ export default function MpesaFields({ register, errors, onBack, selectedPlan, on
         const resultDesc = data?.rawData?.callback?.Body?.stkCallback?.ResultDesc;
         const resultCode = data?.rawData?.callback?.Body?.stkCallback?.ResultCode;
 
-        setCallbackDetails({ message: resultDesc || data.message, details: data });
+        setCallbackDetails((prev) => ({
+          ...prev,
+          message: resultDesc || data.message,
+          details: data,
+        }));
 
         if (resultDesc !== undefined) {
           clearInterval(intervalId);
@@ -185,14 +189,14 @@ export default function MpesaFields({ register, errors, onBack, selectedPlan, on
             {statusConfig[status]?.message}
           </p>
 
-          {callbackDetails?.details?.rawData?.callback?.Body?.stkCallback?.ResultDesc && (
+          {status !== "success" && errorMessage && (
+            <p className="text-sm text-red-600 mt-2 max-w-xs text-center">{errorMessage}</p>
+          )}
+
+          {callbackDetails?.details?.rawData?.callback?.Body?.stkCallback?.ResultDesc && !errorMessage && (
             <p className="text-sm text-gray-600 mt-2">
               {callbackDetails.details.rawData.callback.Body.stkCallback.ResultDesc}
             </p>
-          )}
-
-          {errorMessage && status !== "success" && (
-            <p className="text-sm text-red-600 mt-2 max-w-xs text-center">{errorMessage}</p>
           )}
 
           {callbackDetails && (
