@@ -242,7 +242,7 @@ export default function MpesaFields({ register, onBack, selectedPlan, onSuccess 
             required: "Phone number is required",
             pattern: {
               value: /^0\d{9}$/,
-              message: "Enter a valid Kenyan number (e.g., 0712345678)",
+              message: "Enter a valid Kenyan number",
             },
           })}
           className="w-full border border-gray-300 rounded-md px-4 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2E3191]"
