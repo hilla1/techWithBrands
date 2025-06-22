@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../../../../context/AuthContext";
 import axios from "axios";
-import { FaSpinner, FaCheckCircle, FaTimesCircle, FaExclamationTriangle } from "react-icons/fa";
+import { FaSpinner, FaCheckCircle, FaTimesCircle, FaExclamationTriangle, FaInfoCircle } from "react-icons/fa";
 
 export default function MpesaFields({ register, errors, onBack, selectedPlan, onSuccess }) {
   const [status, setStatus] = useState('idle');
@@ -9,7 +9,9 @@ export default function MpesaFields({ register, errors, onBack, selectedPlan, on
   const [amount, setAmount] = useState(0);
   const [pollAttempts, setPollAttempts] = useState(0);
   const [errorMessage, setErrorMessage] = useState('');
+  const [callbackDetails, setCallbackDetails] = useState(null);
   const [isCalculating, setIsCalculating] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
   const { backend } = useAuth();
 
   // Calculate KES amount when component mounts or plan changes
@@ -24,7 +26,6 @@ export default function MpesaFields({ register, errors, onBack, selectedPlan, on
         setAmount(kesAmount);
       } catch (err) {
         console.error("Amount calculation error:", err);
-        // Fallback calculation
         const usdAmount = parseFloat(selectedPlan.price.replace(/[^0-9.]/g, "")) || 1;
         setAmount(Math.round(usdAmount * 150));
       } finally {
@@ -42,7 +43,7 @@ export default function MpesaFields({ register, errors, onBack, selectedPlan, on
       return Math.round(usdAmount * (rateRes?.rate || 150));
     } catch (err) {
       console.error("Conversion error:", err);
-      return Math.round(usdAmount * 150); // Fallback rate
+      return Math.round(usdAmount * 150);
     }
   };
 
@@ -61,15 +62,20 @@ export default function MpesaFields({ register, errors, onBack, selectedPlan, on
       setStatus('sending');
       setErrorMessage('');
       setPollAttempts(0);
+      setCallbackDetails(null);
 
       const { data } = await axios.post(`${backend}/mpesa/stk-push`, {
         phone,
-        amount, // Using pre-calculated KES amount
+        amount,
       });
 
       if (data.success) {
         setCheckoutRequestId(data.data.CheckoutRequestID);
         setStatus('waiting');
+        setCallbackDetails({
+          message: "STK Push initiated successfully",
+          details: data.data
+        });
       } else {
         throw new Error(data.message || "Payment initiation failed");
       }
@@ -77,6 +83,11 @@ export default function MpesaFields({ register, errors, onBack, selectedPlan, on
       console.error("Payment Error:", err);
       setStatus('failed');
       setErrorMessage(err.response?.data?.message || err.message || "Payment failed. Please try again.");
+      setCallbackDetails({
+        error: true,
+        message: "Payment initiation failed",
+        details: err.response?.data || err.message
+      });
     }
   };
 
@@ -97,18 +108,43 @@ export default function MpesaFields({ register, errors, onBack, selectedPlan, on
         if (data.status === 'Completed') {
           clearTimeout(timeoutId);
           setStatus('success');
+          setCallbackDetails({
+            message: "Payment completed successfully",
+            details: data
+          });
           setTimeout(() => onSuccess?.(amount), 2000);
         } else if (data.status === 'Failed') {
           clearTimeout(timeoutId);
           setStatus('failed');
           setErrorMessage(data.reason || "Payment failed. Please check your M-Pesa balance and try again.");
+          setCallbackDetails({
+            error: true,
+            message: "Payment failed",
+            details: data
+          });
         } else if (data.status === 'InsufficientBalance') {
           clearTimeout(timeoutId);
           setStatus('insufficient');
           setErrorMessage("Insufficient balance in your M-Pesa account");
+          setCallbackDetails({
+            error: true,
+            message: "Insufficient balance",
+            details: data
+          });
+        } else {
+          // Update with latest polling response
+          setCallbackDetails({
+            message: "Waiting for payment confirmation",
+            details: data
+          });
         }
       } catch (err) {
         console.error("Polling error:", err);
+        setCallbackDetails({
+          error: true,
+          message: "Error checking payment status",
+          details: err.response?.data || err.message
+        });
       }
     };
 
@@ -123,6 +159,11 @@ export default function MpesaFields({ register, errors, onBack, selectedPlan, on
           clearInterval(intervalId);
           setStatus('timeout');
           setErrorMessage("Payment verification timed out. Please check your M-Pesa transactions.");
+          setCallbackDetails({
+            error: true,
+            message: "Payment verification timeout",
+            details: "Exceeded maximum polling attempts"
+          });
         }
         return newAttempt;
       });
@@ -135,6 +176,11 @@ export default function MpesaFields({ register, errors, onBack, selectedPlan, on
       if (status === 'waiting') {
         setStatus('timeout');
         setErrorMessage("Payment verification timed out. Please check your M-Pesa transactions.");
+        setCallbackDetails({
+          error: true,
+          message: "Payment verification timeout",
+          details: "Overall timeout reached"
+        });
       }
     }, maxAttempts * pollInterval + 5000);
 
@@ -148,6 +194,7 @@ export default function MpesaFields({ register, errors, onBack, selectedPlan, on
     setStatus('idle');
     setCheckoutRequestId(null);
     setErrorMessage('');
+    setCallbackDetails(null);
   };
 
   const statusConfig = {
@@ -196,11 +243,34 @@ export default function MpesaFields({ register, errors, onBack, selectedPlan, on
           <p className="text-lg font-medium text-center mt-4">
             {statusConfig[status].message}
           </p>
+          
           {errorMessage && status !== 'success' && (
             <p className="text-sm text-center text-red-600 mt-2 max-w-xs">
               {errorMessage}
             </p>
           )}
+
+          {callbackDetails && (
+            <div className="w-full max-w-md mt-4">
+              <button
+                type="button"
+                onClick={() => setShowDetails(!showDetails)}
+                className="flex items-center justify-center text-sm text-blue-600 hover:underline"
+              >
+                <FaInfoCircle className="mr-1" />
+                {showDetails ? 'Hide details' : 'Show transaction details'}
+              </button>
+              
+              {showDetails && (
+                <div className="mt-2 p-3 bg-gray-50 rounded-md text-left overflow-auto max-h-40">
+                  <pre className="text-xs text-gray-700">
+                    {JSON.stringify(callbackDetails.details, null, 2)}
+                  </pre>
+                </div>
+              )}
+            </div>
+          )}
+
           {statusConfig[status].showAction && (
             <button
               type="button"
