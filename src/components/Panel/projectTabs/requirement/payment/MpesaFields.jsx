@@ -20,7 +20,6 @@ export default function MpesaFields({ register, errors, onBack, selectedPlan, on
   const [showDetails, setShowDetails] = useState(false);
   const { backend } = useAuth();
 
-  // Calculate the KES equivalent
   useEffect(() => {
     const calculateKESAmount = async () => {
       if (!selectedPlan?.price) return;
@@ -38,7 +37,6 @@ export default function MpesaFields({ register, errors, onBack, selectedPlan, on
     calculateKESAmount();
   }, [selectedPlan, backend]);
 
-  // Initiate payment
   const handleMpesaPayment = async (e) => {
     e.preventDefault();
     const phone = e.target.phone.value;
@@ -76,7 +74,6 @@ export default function MpesaFields({ register, errors, onBack, selectedPlan, on
     }
   };
 
-  // Poll for status
   useEffect(() => {
     if (status !== "waiting" || !checkoutRequestId) return;
 
@@ -109,12 +106,13 @@ export default function MpesaFields({ register, errors, onBack, selectedPlan, on
           }
         } else {
           setPollAttempts((prev) => {
-            if (prev + 1 >= maxAttempts) {
+            const next = prev + 1;
+            if (next >= maxAttempts) {
               clearInterval(intervalId);
               setStatus("timeout");
               setErrorMessage("Payment confirmation timed out.");
             }
-            return prev + 1;
+            return next;
           });
         }
       } catch (err) {
@@ -179,7 +177,6 @@ export default function MpesaFields({ register, errors, onBack, selectedPlan, on
 
   return (
     <form onSubmit={handleMpesaPayment} className="space-y-6 mt-4 relative">
-      {/* Overlay */}
       {status !== "idle" && (
         <div className="absolute inset-0 bg-white bg-opacity-90 flex flex-col items-center justify-center z-10 p-4">
           {statusConfig[status]?.icon}
@@ -230,7 +227,6 @@ export default function MpesaFields({ register, errors, onBack, selectedPlan, on
         </div>
       )}
 
-      {/* Input */}
       <div>
         <label className="block font-medium text-gray-700 mb-1">M-Pesa Phone Number</label>
         <input
@@ -250,7 +246,6 @@ export default function MpesaFields({ register, errors, onBack, selectedPlan, on
         {errors?.phone && <p className="text-red-600 text-sm mt-1">{errors.phone.message}</p>}
       </div>
 
-      {/* Plan Info */}
       <div className="bg-gray-50 p-4 rounded-md">
         <p className="font-medium">Plan: {selectedPlan?.name}</p>
         <p className="text-gray-600">
@@ -263,7 +258,6 @@ export default function MpesaFields({ register, errors, onBack, selectedPlan, on
         </p>
       </div>
 
-      {/* Buttons */}
       <div className="flex justify-between items-center pt-2">
         <button
           type="button"
