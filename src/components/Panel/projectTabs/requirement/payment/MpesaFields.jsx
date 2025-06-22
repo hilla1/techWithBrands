@@ -248,7 +248,6 @@ export default function MpesaFields({ register, onBack, selectedPlan, onSuccess 
           className="w-full border border-gray-300 rounded-md px-4 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2E3191]"
           disabled={status !== "idle"}
         />
-        {errors?.phone && <p className="text-red-600 text-sm mt-1">{errors.phone.message}</p>}
       </div>
 
       <div className="bg-gray-50 p-4 rounded-md">
