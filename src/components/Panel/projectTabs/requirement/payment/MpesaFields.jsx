@@ -30,7 +30,6 @@ export default function MpesaFields({ selectedPlan, onBack, onSuccess }) {
         setAmount(Math.round(usd * (data?.rate || 150)));
       } catch {
         setAmount(Math.round((parseFloat(selectedPlan.price.replace(/[^0-9.]/g, "")) || 1) * 150));
-        setAmount(1);
       } finally {
         setIsCalculating(false);
       }
