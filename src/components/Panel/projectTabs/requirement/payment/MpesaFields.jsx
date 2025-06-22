@@ -55,11 +55,13 @@ export default function MpesaFields({ register, errors, onBack, selectedPlan, on
       const { data } = await axios.post(`${backend}/mpesa/stk-push`, { phone, amount });
       if (data.success) {
         setCheckoutRequestId(data.data.CheckoutRequestID);
-        setStatus("waiting");
         setCallbackDetails({
           message: "STK Push sent to your phone. Please complete the payment.",
           details: data.data,
         });
+
+        // Immediately set to waiting and begin polling
+        setStatus("waiting");
       } else {
         throw new Error(data.message || "Failed to initiate payment");
       }
@@ -77,8 +79,9 @@ export default function MpesaFields({ register, errors, onBack, selectedPlan, on
   useEffect(() => {
     if (status !== "waiting" || !checkoutRequestId) return;
 
-    const maxAttempts = 5;
+    const maxAttempts = 4;
     const interval = 10000;
+    let attempts = 0;
 
     const intervalId = setInterval(async () => {
       try {
@@ -105,15 +108,13 @@ export default function MpesaFields({ register, errors, onBack, selectedPlan, on
             setErrorMessage(resultDesc);
           }
         } else {
-          setPollAttempts((prev) => {
-            const next = prev + 1;
-            if (next >= maxAttempts) {
-              clearInterval(intervalId);
-              setStatus("timeout");
-              setErrorMessage("Payment confirmation timed out.");
-            }
-            return next;
-          });
+          attempts++;
+          setPollAttempts(attempts);
+          if (attempts >= maxAttempts) {
+            clearInterval(intervalId);
+            setStatus("timeout");
+            setErrorMessage("Payment confirmation timed out.");
+          }
         }
       } catch (err) {
         clearInterval(intervalId);
