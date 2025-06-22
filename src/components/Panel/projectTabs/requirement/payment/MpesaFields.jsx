@@ -9,7 +9,7 @@ import {
   FaInfoCircle,
 } from "react-icons/fa";
 
-export default function MpesaFields({ register, onBack, selectedPlan, onSuccess }) {
+export default function MpesaFields({ selectedPlan, onBack, onSuccess }) {
   const [status, setStatus] = useState("idle");
   const [checkoutRequestId, setCheckoutRequestId] = useState(null);
   const [amount, setAmount] = useState(0);
