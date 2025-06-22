@@ -288,7 +288,7 @@ const ConsultationModal = ({ isOpen, onClose }) => {
   return (
     <>
       <ReusableModal isOpen={isOpen} onClose={onClose}>
-        <div className="pt-6">
+        <div>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {/* Progress bar */}
             <div className="w-full h-2 rounded bg-gray-200 overflow-hidden">

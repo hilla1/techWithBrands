@@ -3,19 +3,19 @@ import PaymentPlans from "./payment/PaymentPlans";
 import PaymentForm from "./payment/PaymentForm";
 
 export default function PaymentGateway({
-  onSuccess,
+  onClose,
   prevStep,
   projectData,
   featuresData,
 }) {
-  const [selectedPlan, setSelectedPlan] = useState(null); // Stores the full plan object
-  const [availablePlans, setAvailablePlans] = useState([]); // For optional future use
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [availablePlans, setAvailablePlans] = useState([]);
 
-  // Handle payment form submission
-  const handlePaymentSubmit = (paymentInfo) => {
-    console.log("✅ Payment Data:", paymentInfo);
+  // Handle when payment completes and modal should be closed
+  const handlePaymentClose = () => {
+    console.log("✅ Payment completed and modal will close.");
     alert("✅ Payment processed successfully!");
-    onSuccess?.(); // Trigger success callback
+    onClose?.(); // Close modal
   };
 
   return (
@@ -42,8 +42,9 @@ export default function PaymentGateway({
           </h2>
           <PaymentForm
             selectedPlan={selectedPlan}
-            onSubmit={handlePaymentSubmit}
+            onSubmit={handlePaymentClose}
             onBack={prevStep}
+            onClose={onClose} 
           />
         </section>
       )}

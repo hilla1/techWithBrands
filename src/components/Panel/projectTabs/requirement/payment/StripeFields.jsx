@@ -11,7 +11,7 @@ import { FaSpinner, FaCheckCircle } from "react-icons/fa";
 
 const BACKEND_URL = import.meta.env.VITE_API_URL;
 
-export default function StripeFields({ selectedPlan, onPaymentSuccess, onBack }) {
+export default function StripeFields({ selectedPlan, onBack , onClose }) {
   const stripe = useStripe();
   const elements = useElements();
 
@@ -28,14 +28,12 @@ export default function StripeFields({ selectedPlan, onPaymentSuccess, onBack })
     setSuccess(null);
 
     try {
-      // Parse price string (e.g., "$1499") and convert to cents
       const amountInCents = parseFloat(selectedPlan.price.replace(/[^0-9.]/g, ""));
 
       if (!amountInCents || isNaN(amountInCents) || amountInCents < 50) {
         throw new Error("Invalid payment amount");
       }
 
-      // Create PaymentIntent from backend
       const { data } = await axios.post(`${BACKEND_URL}/stripe/create-payment-intent`, {
         amount: amountInCents,
         currency: "usd",
@@ -47,7 +45,6 @@ export default function StripeFields({ selectedPlan, onPaymentSuccess, onBack })
         throw new Error("Failed to get client secret from server");
       }
 
-      // Confirm payment
       const result = await stripe.confirmCardPayment(clientSecret, {
         payment_method: {
           card: elements.getElement(CardNumberElement),
@@ -61,12 +58,6 @@ export default function StripeFields({ selectedPlan, onPaymentSuccess, onBack })
       if (result.paymentIntent.status === "succeeded") {
         setSuccess(`Payment of $${amountInCents} completed successfully!`);
         setShowSuccess(true);
-        
-        // Show success message for 2 seconds before calling onPaymentSuccess
-        setTimeout(() => {
-          setShowSuccess(false);
-          onPaymentSuccess?.(result.paymentIntent);
-        }, 2000);
       }
     } catch (err) {
       setError(err?.response?.data?.message || err.message || "Payment failed. Please try again.");
@@ -91,29 +82,32 @@ export default function StripeFields({ selectedPlan, onPaymentSuccess, onBack })
 
   return (
     <div className="space-y-5 mt-4 relative">
-      {/* Loading Overlay */}
       {processing && (
         <div className="absolute inset-0 bg-white bg-opacity-80 flex items-center justify-center z-10">
           <FaSpinner className="animate-spin text-4xl text-[#2E3191] opacity-90" />
         </div>
       )}
 
-      {/* Success Message Overlay */}
       {showSuccess && (
         <div className="absolute inset-0 bg-white bg-opacity-80 flex flex-col items-center justify-center z-20">
           <FaCheckCircle className="text-green-500 text-5xl mb-4" />
           <p className="text-xl font-semibold text-gray-800">{success}</p>
+          <button
+            type="button"
+            onClick={onClose}
+            className="mt-4 px-5 py-2 rounded-md bg-[#2E3191] text-white hover:opacity-90"
+          >
+            Continue
+          </button>
         </div>
       )}
 
-      {/* Error Message */}
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
           {error}
         </div>
       )}
 
-      {/* Card Number */}
       <div>
         <label className="block font-medium text-gray-700 mb-1">Card Number</label>
         <div className="border border-gray-300 rounded-md p-3 bg-white shadow-sm">
@@ -121,7 +115,6 @@ export default function StripeFields({ selectedPlan, onPaymentSuccess, onBack })
         </div>
       </div>
 
-      {/* Expiry and CVC */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block font-medium text-gray-700 mb-1">Expiry Date</label>
@@ -137,7 +130,6 @@ export default function StripeFields({ selectedPlan, onPaymentSuccess, onBack })
         </div>
       </div>
 
-      {/* Buttons */}
       <div className="pt-4 flex justify-between items-center">
         <button
           type="button"

@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { FaTimes } from 'react-icons/fa';
 
 const ReusableModal = ({ isOpen, onClose, children, size = 'default' }) => {
-  // Prevent body scroll when modal is open
+  // Disable body scroll when modal is open
   useEffect(() => {
     document.body.style.overflow = isOpen ? 'hidden' : '';
     return () => {
@@ -12,7 +12,7 @@ const ReusableModal = ({ isOpen, onClose, children, size = 'default' }) => {
 
   if (!isOpen) return null;
 
-  // Responsive size options
+  // Size configurations
   const sizeClasses = {
     default: 'w-full max-w-md md:max-w-1/3 lg:max-w-1/2',
     sm: 'w-full max-w-sm',
@@ -38,27 +38,30 @@ const ReusableModal = ({ isOpen, onClose, children, size = 'default' }) => {
         }
       `}</style>
 
+      {/* Modal backdrop */}
       <div className="fixed inset-0 z-50 flex items-center justify-center">
-        {/* Overlay */}
+        {/* Dark overlay */}
         <div className="absolute inset-0 bg-black opacity-50" aria-hidden="true" />
 
-        {/* Modal Container */}
+        {/* Modal container */}
         <div
-          className={`relative bg-white rounded-lg shadow-lg z-10 mx-4 ${sizeClasses[size]}`}
+          className={`relative bg-white shadow-lg z-10 mx-4 overflow-hidden rounded-lg ${sizeClasses[size]}`}
           style={{ maxHeight: size === 'full' ? '100vh' : '80vh' }}
         >
-          {/* Close Button inside modal box */}
-          <button
-            className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 z-20"
-            onClick={onClose}
-            aria-label="Close modal"
-          >
-            <FaTimes size={22} />
-          </button>
+          {/* Sticky top bar with curved top corners and close button */}
+          <div className="sticky top-0 z-10 bg-white h-[30px] px-1 flex items-center justify-end rounded-tl-lg rounded-tr-lg">
+            <button
+              className="text-gray-500 hover:text-gray-700"
+              onClick={onClose}
+              aria-label="Close modal"
+            >
+              <FaTimes size={22} />
+            </button>
+          </div>
 
-          {/* Modal Content Area */}
+          {/* Scrollable content area */}
           <div
-            className="custom-scrollbar overflow-y-auto p-4 space-y-4"
+            className="custom-scrollbar overflow-y-auto px-4 pb-4 pt-2 space-y-4"
             style={{
               maxHeight: size === 'full' ? 'calc(100vh - 2rem)' : 'calc(80vh - 2rem)',
             }}

@@ -134,7 +134,7 @@ export default function PaymentPlans({
   }, [projectData, featuresData, selectedPlan, setSelectedPlan, setAvailablePlans]);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 p-4 md:grid-cols-3 gap-6">
       {plansToRender.map((plan) => {
         const isSelected = selectedPlan?.name === plan.name;
 

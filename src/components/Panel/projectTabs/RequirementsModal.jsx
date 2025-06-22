@@ -28,14 +28,14 @@ export default function RequirementsModal({ isOpen, onClose }) {
   return (
     <ReusableModal isOpen={isOpen} onClose={onClose} size="lg">
       {/* Progress Header */}
-      <div className="mb-6 p-4 mx-4 mt-6 rounded-lg bg-gradient-to-r from-blue-100 to-orange-100">
+      <div className="mb-6 p-4 rounded-lg bg-gradient-to-r from-blue-100 to-orange-100">
         <StepProgress currentStep={step} steps={STEPS} />
       </div>
 
       {/* Step Content */}
-      <div className="space-y-8 px-4 pb-4 text-sm sm:text-base md:text-lg">
+      <div className="space-y-8 pb-4 text-sm sm:text-base md:text-lg">
         {step === 1 && (
-          <div className="bg-gradient-to-br from-white to-blue-50 p-4 sm:p-6 md:p-8 rounded-lg">
+          <div className="bg-gradient-to-br from-white to-blue-50 p-4 sm:p-6 rounded-lg">
             <ProjectForm
               defaultValues={projectData}
               onSubmit={(data) => {
@@ -47,7 +47,7 @@ export default function RequirementsModal({ isOpen, onClose }) {
         )}
 
         {step === 2 && (
-          <div className="bg-gradient-to-br from-white to-orange-50 p-4 sm:p-6 md:p-8 rounded-lg">
+          <div className="bg-gradient-to-br from-white to-orange-50 p-4 sm:p-6 rounded-lg">
             <FeaturesForm
               featuresData={featuresData}
               setFeaturesData={setFeaturesData}
@@ -61,7 +61,7 @@ export default function RequirementsModal({ isOpen, onClose }) {
         )}
 
         {step === 3 && (
-          <div className="bg-gradient-to-br from-white to-blue-50 p-4 sm:p-6 md:p-8 rounded-lg">
+          <div className="bg-gradient-to-br from-white to-blue-50 p-4 sm:p-6 rounded-lg">
             <FileUpload
               uploadedFiles={uploadedFiles}
               setUploadedFiles={setUploadedFiles}
@@ -72,7 +72,7 @@ export default function RequirementsModal({ isOpen, onClose }) {
         )}
 
         {step === 4 && (
-          <div className="bg-gradient-to-br from-white to-orange-50 p-4 sm:p-6 md:p-8 rounded-lg">
+          <div className="bg-gradient-to-br from-white to-orange-50 p-4 sm:p-6 rounded-lg">
             <ReviewStep
               projectData={projectData}
               featuresData={featuresData}
@@ -84,11 +84,11 @@ export default function RequirementsModal({ isOpen, onClose }) {
         )}
 
         {step === 5 && (
-          <div className="bg-gradient-to-br from-white to-blue-50 p-4 sm:p-6 md:p-8 rounded-lg">
+          <div className="bg-gradient-to-br from-white to-blue-50 sm:p-6 rounded-lg">
             <PaymentGateway
               projectData={projectData}
               featuresData={featuresData}
-              onSuccess={() => {
+              onClose={() => {
                 alert("✅ Payment complete! Thank you.");
                 onClose();
               }}

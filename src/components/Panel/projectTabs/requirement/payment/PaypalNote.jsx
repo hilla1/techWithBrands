@@ -3,10 +3,11 @@ import axios from "axios";
 import { useState } from "react";
 import { useAuth } from "../../../../../context/AuthContext";
 
-export default function PaypalNote({ selectedPlan, onBack, onSubmit }) {
+export default function PaypalNote({ selectedPlan, onBack , onClose }) {
   const [{ isPending }] = usePayPalScriptReducer();
   const [paid, setPaid] = useState(false);
   const [error, setError] = useState(null);
+  const [retryKey, setRetryKey] = useState(0); 
   const { backend } = useAuth();
 
   const planName = selectedPlan?.name || "Selected Plan";
@@ -50,9 +51,7 @@ export default function PaypalNote({ selectedPlan, onBack, onSubmit }) {
 
       if (res.data?.status === "COMPLETED") {
         setPaid(true);
-        if (typeof onSubmit === "function") {
-          onSubmit(); // 🔔 Call global onSubmit after successful payment
-        }
+        setError(null);
       } else {
         setError("⚠️ Payment was not completed");
       }
@@ -60,6 +59,11 @@ export default function PaypalNote({ selectedPlan, onBack, onSubmit }) {
       setError("❌ Failed to capture PayPal payment");
       console.error("Capture Error:", err);
     }
+  };
+
+  const handleRetry = () => {
+    setError(null);
+    setRetryKey(prev => prev + 1); // Triggers re-render of PayPalButtons
   };
 
   return (
@@ -72,7 +76,7 @@ export default function PaypalNote({ selectedPlan, onBack, onSubmit }) {
         <p className="text-sm text-gray-500">⚙️ Loading payment options...</p>
       )}
 
-      {!paid && (
+      {!paid && !error && (
         <>
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-600 mb-2">
@@ -80,6 +84,7 @@ export default function PaypalNote({ selectedPlan, onBack, onSubmit }) {
             </label>
             <div className="border border-gray-300 rounded-md p-2">
               <PayPalButtons
+                key={`paypal-${retryKey}`}
                 fundingSource={FUNDING.PAYPAL}
                 style={{ layout: "horizontal", label: "paypal" }}
                 createOrder={createOrder}
@@ -98,6 +103,7 @@ export default function PaypalNote({ selectedPlan, onBack, onSubmit }) {
             </label>
             <div className="border border-gray-300 rounded-md p-2">
               <PayPalButtons
+                key={`card-${retryKey}`}
                 fundingSource={FUNDING.CARD}
                 style={{ layout: "horizontal", label: "pay", height: 45 }}
                 createOrder={createOrder}
@@ -114,26 +120,52 @@ export default function PaypalNote({ selectedPlan, onBack, onSubmit }) {
 
       {paid && (
         <div className="mt-4 p-3 bg-green-50 border border-green-300 text-green-700 rounded text-sm font-medium">
-          ✅ Payment successful. Thank you for subscribing!
+          ✅ Payment of ${planPrice.toFixed(2)} was successful. Thank you for subscribing!
+          <div className="mt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-5 py-2 mt-2 rounded-md bg-[#2E3191] text-white hover:opacity-90"
+            >
+              Continue
+            </button>
+          </div>
         </div>
       )}
 
       {error && (
         <div className="mt-4 p-3 bg-red-50 border border-red-300 text-red-700 rounded text-sm font-medium">
           {error}
+          <div className="mt-4 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={handleRetry}
+              className="px-5 py-2 rounded-md bg-yellow-400 text-white hover:opacity-90"
+            >
+              Retry Payment
+            </button>
+            <button
+              type="button"
+              onClick={onBack}
+              className="px-5 py-2 rounded-md bg-[#2E3191] text-white hover:opacity-90"
+            >
+              Continue
+            </button>
+          </div>
         </div>
       )}
 
-      {/* Back Button */}
-      <div className="pt-6">
-        <button
-          type="button"
-          onClick={onBack}
-          className="px-5 py-2 rounded-md text-gray-700 bg-gray-200 hover:opacity-80"
-        >
-          ← Back
-        </button>
-      </div>
+      {!paid && !error && (
+        <div className="pt-6">
+          <button
+            type="button"
+            onClick={onBack}
+            className="px-5 py-2 rounded-md text-gray-700 bg-gray-200 hover:opacity-80"
+          >
+            ← Back
+          </button>
+        </div>
+      )}
     </div>
   );
 }

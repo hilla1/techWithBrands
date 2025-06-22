@@ -1,40 +1,18 @@
-import { useForm } from "react-hook-form";
+import { useState } from "react";
 import { FiCreditCard } from "react-icons/fi";
 import { FaPaypal, FaStripe, FaMobileAlt } from "react-icons/fa";
-import { useState } from "react";
 import StripeFields from "./StripeFields";
 import MpesaFields from "./MpesaFields";
 import PaypalNote from "./PaypalNote";
 
-export default function PaymentForm({ selectedPlan, onSubmit, onBack }) {
-  const {
-    register,
-    watch,
-    formState: { errors },
-  } = useForm({
-    defaultValues: { paymentMethod: "stripe" },
-  });
-
+export default function PaymentForm({ selectedPlan, onBack, onClose }) {
+  const [paymentMethod, setPaymentMethod] = useState("stripe");
   const [status, setStatus] = useState(null);
   const [message, setMessage] = useState("");
-
-  const paymentMethod = watch("paymentMethod");
 
   const planName = selectedPlan?.name || "Selected";
   const planPrice = selectedPlan?.price || "$0";
   const planPeriod = selectedPlan?.period || "";
-
-  const handleSuccess = (paymentIntent) => {
-    setStatus("success");
-    setMessage("✅ Payment successful!");
-    console.log("PaymentIntent:", paymentIntent);
-    onSubmit?.();
-  };
-
-  const handleError = (msg) => {
-    setStatus("error");
-    setMessage(msg || "❌ Payment failed. Please try again.");
-  };
 
   const methodOptions = [
     {
@@ -55,7 +33,7 @@ export default function PaymentForm({ selectedPlan, onSubmit, onBack }) {
   ];
 
   return (
-    <div className="bg-white rounded-xl max-w-3xl mx-auto px-6 py-8 border border-gray-100 shadow-md">
+    <div className="bg-white rounded-xl max-w-3xl mx-auto px-4 py-8 border border-gray-100 shadow-md">
       {/* Header */}
       <div className="text-center mb-6">
         <div className="flex items-center justify-center gap-3 mb-2">
@@ -93,52 +71,34 @@ export default function PaymentForm({ selectedPlan, onSubmit, onBack }) {
           </label>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {methodOptions.map((option) => (
-              <label
+              <button
                 key={option.id}
-                className={`flex items-center justify-center gap-2 px-4 py-3 rounded-md cursor-pointer border text-center transition text-sm ${
+                type="button"
+                onClick={() => setPaymentMethod(option.id)}
+                className={`flex items-center justify-center gap-2 px-4 py-3 rounded-md w-full text-sm transition ${
                   paymentMethod === option.id
                     ? "bg-gradient-to-r from-[#2E3191] to-[#F89F2D] text-white font-semibold"
-                    : "border-gray-300 bg-white text-gray-700 hover:border-[#2E3191]"
+                    : "bg-white border border-gray-300 text-gray-700 hover:border-[#2E3191]"
                 }`}
               >
-                <input
-                  type="radio"
-                  value={option.id}
-                  {...register("paymentMethod")}
-                  className="hidden"
-                />
                 {option.icon}
                 {option.label}
-              </label>
+              </button>
             ))}
           </div>
         </div>
 
         {/* Conditional Fields */}
         {paymentMethod === "stripe" && selectedPlan && (
-          <StripeFields
-            selectedPlan={selectedPlan}
-            onPaymentSuccess={handleSuccess}
-            onPaymentError={handleError}
-            onBack={onBack}
-          />
+          <StripeFields selectedPlan={selectedPlan} onBack={onBack} onClose={onClose} />
         )}
 
         {paymentMethod === "mpesa" && (
-          <MpesaFields
-            register={register}
-            errors={errors}
-            onBack={onBack}
-            selectedPlan={selectedPlan}
-          />
+          <MpesaFields selectedPlan={selectedPlan} onBack={onBack} onClose={onClose} />
         )}
 
         {paymentMethod === "paypal" && (
-          <PaypalNote
-            selectedPlan={selectedPlan}
-            onSubmit={handleSuccess}
-            onBack={onBack}
-          />
+          <PaypalNote selectedPlan={selectedPlan} onBack={onBack} onClose={onClose} />
         )}
 
         {/* Status Message */}

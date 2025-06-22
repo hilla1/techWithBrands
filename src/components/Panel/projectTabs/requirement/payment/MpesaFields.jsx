@@ -9,7 +9,7 @@ import {
   FaInfoCircle,
 } from "react-icons/fa";
 
-export default function MpesaFields({ selectedPlan, onBack, onSuccess }) {
+export default function MpesaFields({ selectedPlan, onBack, onClose }) {
   const [status, setStatus] = useState("idle");
   const [checkoutRequestId, setCheckoutRequestId] = useState(null);
   const [amount, setAmount] = useState(0);
@@ -59,8 +59,6 @@ export default function MpesaFields({ selectedPlan, onBack, onSuccess }) {
           message: "STK Push sent to your phone. Please complete the payment.",
           details: data.data,
         });
-
-        // Immediately set to waiting and begin polling
         setStatus("waiting");
       } else {
         throw new Error(data.message || "Failed to initiate payment");
@@ -103,7 +101,6 @@ export default function MpesaFields({ selectedPlan, onBack, onSuccess }) {
 
           if (data.success && data.status === "Completed" && resultCode === 0) {
             setStatus("success");
-            setTimeout(() => onSuccess?.(amount), 2000);
           } else if (resultDesc.toLowerCase().includes("insufficient")) {
             setStatus("insufficient");
             setErrorMessage(resultDesc);
@@ -133,7 +130,7 @@ export default function MpesaFields({ selectedPlan, onBack, onSuccess }) {
     }, interval);
 
     return () => clearInterval(intervalId);
-  }, [status, checkoutRequestId, backend, amount, onSuccess]);
+  }, [status, checkoutRequestId, backend]);
 
   const resetPayment = () => {
     setStatus("idle");
@@ -193,11 +190,12 @@ export default function MpesaFields({ selectedPlan, onBack, onSuccess }) {
             <p className="text-sm text-red-600 mt-2 max-w-xs text-center">{errorMessage}</p>
           )}
 
-          {callbackDetails?.details?.rawData?.callback?.Body?.stkCallback?.ResultDesc && !errorMessage && (
-            <p className="text-sm text-gray-600 mt-2">
-              {callbackDetails.details.rawData.callback.Body.stkCallback.ResultDesc}
-            </p>
-          )}
+          {callbackDetails?.details?.rawData?.callback?.Body?.stkCallback?.ResultDesc &&
+            !errorMessage && (
+              <p className="text-sm text-gray-600 mt-2">
+                {callbackDetails.details.rawData.callback.Body.stkCallback.ResultDesc}
+              </p>
+            )}
 
           {callbackDetails && (
             <div className="w-full max-w-md mt-4">
@@ -223,7 +221,7 @@ export default function MpesaFields({ selectedPlan, onBack, onSuccess }) {
           {statusConfig[status].showAction && (
             <button
               type="button"
-              onClick={status === "success" ? () => onSuccess?.(amount) : resetPayment}
+              onClick={status === "success" ? onClose : resetPayment}
               className="mt-6 px-6 py-2 bg-[#2E3191] text-white rounded-md hover:opacity-90"
             >
               {statusConfig[status].actionText}
