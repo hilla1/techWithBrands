@@ -77,11 +77,14 @@ export default function MpesaFields({ selectedPlan, onBack, onClose }) {
   useEffect(() => {
     if (status !== "waiting" || !checkoutRequestId) return;
 
-    const maxAttempts = 4;
+    const maxAttempts = 3;
     const interval = 10000;
     let attempts = 0;
 
     const intervalId = setInterval(async () => {
+      attempts++;
+      setPollAttempts(attempts);
+
       try {
         const { data } = await axios.get(`${backend}/mpesa/transaction-status`, {
           params: { checkoutRequestId },
@@ -108,14 +111,10 @@ export default function MpesaFields({ selectedPlan, onBack, onClose }) {
             setStatus("failed");
             setErrorMessage(resultDesc);
           }
-        } else {
-          attempts++;
-          setPollAttempts(attempts);
-          if (attempts >= maxAttempts) {
-            clearInterval(intervalId);
-            setStatus("timeout");
-            setErrorMessage("Payment confirmation timed out.");
-          }
+        } else if (attempts >= maxAttempts) {
+          clearInterval(intervalId);
+          setStatus("timeout");
+          setErrorMessage("Payment confirmation timed out.");
         }
       } catch (err) {
         clearInterval(intervalId);
@@ -148,7 +147,7 @@ export default function MpesaFields({ selectedPlan, onBack, onClose }) {
     },
     waiting: {
       icon: <FaSpinner className="animate-spin text-4xl text-blue-500" />,
-      message: `Waiting for payment... (${pollAttempts}/5)`,
+      message: `Waiting for payment... (${pollAttempts}/3)`,
       showAction: false,
     },
     success: {
