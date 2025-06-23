@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../../../../../context/AuthContext";
 import axios from "axios";
+import io from "socket.io-client";
 import {
   FaSpinner,
   FaCheckCircle,
@@ -13,11 +14,12 @@ export default function MpesaFields({ selectedPlan, onBack, onClose }) {
   const [status, setStatus] = useState("idle");
   const [checkoutRequestId, setCheckoutRequestId] = useState(null);
   const [amount, setAmount] = useState(0);
-  const [pollAttempts, setPollAttempts] = useState(0);
   const [errorMessage, setErrorMessage] = useState("");
   const [callbackDetails, setCallbackDetails] = useState(null);
   const [isCalculating, setIsCalculating] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const [manualRetryAvailable, setManualRetryAvailable] = useState(false);
+  const socketRef = useRef(null);
   const { backend } = useAuth();
 
   useEffect(() => {
@@ -50,7 +52,6 @@ export default function MpesaFields({ selectedPlan, onBack, onClose }) {
       setStatus("sending");
       setErrorMessage("");
       setCallbackDetails(null);
-      setPollAttempts(0);
 
       const { data } = await axios.post(`${backend}/mpesa/stk-push`, { phone, amount });
       if (data.success) {
@@ -66,78 +67,40 @@ export default function MpesaFields({ selectedPlan, onBack, onClose }) {
     } catch (err) {
       setStatus("failed");
       setErrorMessage(err?.response?.data?.message || err.message || "Payment failed.");
-      setCallbackDetails({
-        error: true,
-        message: "Payment initiation error",
-        details: err?.response?.data || err.message,
-      });
     }
   };
 
   useEffect(() => {
-    if (status !== "waiting" || !checkoutRequestId) return;
+    if (!checkoutRequestId) return;
 
-    const maxAttempts = 3;
-    const interval = 10000;
-    let attempts = 0;
+    socketRef.current = io(import.meta.env.VITE_BACKEND_URL, {
+      auth: { token: import.meta.env.VITE_SOCKET_AUTH_TOKEN },
+      transports: ["websocket"],
+    });
 
-    const intervalId = setInterval(async () => {
-      attempts++;
-      setPollAttempts(attempts);
+    socketRef.current.emit("joinRoom", checkoutRequestId);
 
-      try {
-        const { data } = await axios.get(`${backend}/mpesa/transaction-status`, {
-          params: { checkoutRequestId },
-        });
+    socketRef.current.on("mpesa:statusUpdate", (payload) => {
+      setStatus(payload.status);
+      setCallbackDetails(payload.data);
+      setManualRetryAvailable(false);
+    });
 
-        const resultDesc = data?.rawData?.callback?.Body?.stkCallback?.ResultDesc;
-        const resultCode = data?.rawData?.callback?.Body?.stkCallback?.ResultCode;
+    socketRef.current.on("mpesa:cleanupRoom", () => {
+      socketRef.current.emit("leaveRoom", checkoutRequestId);
+    });
 
-        setCallbackDetails((prev) => ({
-          ...prev,
-          message: resultDesc || data.message,
-          details: data,
-        }));
+    socketRef.current.on("connect_error", () => {
+      setManualRetryAvailable(true);
+    });
 
-        if (resultDesc !== undefined) {
-          clearInterval(intervalId);
-
-          if (data.success && data.status === "Completed" && resultCode === 0) {
-            setStatus("success");
-          } else if (resultDesc.toLowerCase().includes("insufficient")) {
-            setStatus("insufficient");
-            setErrorMessage(resultDesc);
-          } else {
-            setStatus("failed");
-            setErrorMessage(resultDesc);
-          }
-        } else if (attempts >= maxAttempts) {
-          clearInterval(intervalId);
-          setStatus("timeout");
-          setErrorMessage("Payment confirmation timed out.");
-        }
-      } catch (err) {
-        clearInterval(intervalId);
-        setStatus("failed");
-        setErrorMessage(err?.response?.data?.message || "Error checking payment status");
-        setCallbackDetails({
-          error: true,
-          message: "Polling error",
-          details: err?.response?.data || err.message,
-        });
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.emit("leaveRoom", checkoutRequestId);
+        socketRef.current.disconnect();
       }
-    }, interval);
-
-    return () => clearInterval(intervalId);
-  }, [status, checkoutRequestId, backend]);
-
-  const resetPayment = () => {
-    setStatus("idle");
-    setCheckoutRequestId(null);
-    setErrorMessage("");
-    setCallbackDetails(null);
-    setPollAttempts(0);
-  };
+    };
+  }, [checkoutRequestId]);
 
   const statusConfig = {
     sending: {
@@ -147,7 +110,7 @@ export default function MpesaFields({ selectedPlan, onBack, onClose }) {
     },
     waiting: {
       icon: <FaSpinner className="animate-spin text-4xl text-blue-500" />,
-      message: `Waiting for payment... (${pollAttempts}/3)`,
+      message: `Waiting for payment...`,
       showAction: false,
     },
     success: {
@@ -217,10 +180,35 @@ export default function MpesaFields({ selectedPlan, onBack, onClose }) {
             </div>
           )}
 
+          {manualRetryAvailable && (
+            <button
+              onClick={async () => {
+                try {
+                  const { data } = await axios.get(
+                    `${backend}/mpesa/transaction-status?checkoutRequestId=${checkoutRequestId}`
+                  );
+                  setCallbackDetails(data);
+                  setStatus(data.status);
+                  setManualRetryAvailable(false);
+                } catch (err) {
+                  console.error("Retry failed:", err.message);
+                }
+              }}
+              className="mt-4 px-4 py-2 bg-yellow-500 text-white rounded"
+            >
+              Retry Status Check
+            </button>
+          )}
+
           {statusConfig[status].showAction && (
             <button
               type="button"
-              onClick={status === "success" ? onClose : resetPayment}
+              onClick={status === "success" ? onClose : () => {
+                setStatus("idle");
+                setCheckoutRequestId(null);
+                setErrorMessage("");
+                setCallbackDetails(null);
+              }}
               className="mt-6 px-6 py-2 bg-[#2E3191] text-white rounded-md hover:opacity-90"
             >
               {statusConfig[status].actionText}
@@ -243,8 +231,7 @@ export default function MpesaFields({ selectedPlan, onBack, onClose }) {
       <div className="bg-gray-50 p-4 rounded-md">
         <p className="font-medium">Plan: {selectedPlan?.name}</p>
         <p className="text-gray-600">
-          Amount: KES{" "}
-          {isCalculating ? (
+          Amount: KES {isCalculating ? (
             <FaSpinner className="inline animate-spin ml-1" />
           ) : (
             amount.toLocaleString()
