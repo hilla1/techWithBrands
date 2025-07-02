@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useAuth } from "../../../context/AuthContext";
 import ReusableModal from "../../reusable/ReusableModal";
 import StepProgress from "./requirement/StepProgress";
 import ProjectForm from "./requirement/ProjectForm";
@@ -6,8 +7,9 @@ import FeaturesForm from "./requirement/FeaturesForm";
 import FileUpload from "./requirement/FileUpload";
 import ReviewStep from "./requirement/ReviewStep";
 import PaymentGateway from "./requirement/PaymentGateway";
+import EmailPrompt from "./requirement/EmailPrompt";
+import { FaSpinner } from "react-icons/fa";
 
-// Steps configuration
 const STEPS = [
   { id: 1, name: "Project Description", description: "Tell us about your project" },
   { id: 2, name: "Feature List", description: "Define key features and requirements" },
@@ -17,13 +19,89 @@ const STEPS = [
 ];
 
 export default function RequirementsModal({ isOpen, onClose }) {
+  const { user, backend, isAuthenticated, checkAuthentication } = useAuth();
   const [step, setStep] = useState(1);
   const [projectData, setProjectData] = useState({});
   const [featuresData, setFeaturesData] = useState({ features: [], integrations: [] });
   const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [showEmailPrompt, setShowEmailPrompt] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const hasRestoredSession = useRef(false);
 
-  const next = () => step < STEPS.length && setStep(step + 1);
+  const next = () => {
+    if (step >= 2 && !isAuthenticated) {
+      setShowEmailPrompt(true);
+      return;
+    }
+    if (step < STEPS.length) setStep(step + 1);
+  };
+
   const back = () => step > 1 && setStep(step - 1);
+
+  // Restore session data, jump to step 3, and clear session storage
+  useEffect(() => {
+    if (
+      isOpen &&
+      isAuthenticated &&
+      user?.email &&
+      !hasRestoredSession.current
+    ) {
+      const sessionKey = `sessionData_${user.email}`;
+      const stored = sessionStorage.getItem(sessionKey);
+
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          setProjectData(parsed.projectData || {});
+          setFeaturesData(parsed.featuresData || { features: [], integrations: [] });
+          setStep(3); // Jump to step 3
+          sessionStorage.removeItem(sessionKey); //  Immediately clear after restoring
+        } catch (err) {
+          console.error("Error parsing session data", err);
+        }
+      }
+      hasRestoredSession.current = true;
+    }
+  }, [isOpen, isAuthenticated, user]);
+
+  // Close email prompt when authentication is successful
+  useEffect(() => {
+    if (isAuthenticated && showEmailPrompt) {
+      setShowEmailPrompt(false);
+      if (step >= 2) setStep(step + 1);
+    }
+  }, [isAuthenticated, showEmailPrompt, step]);
+
+  // Reset state when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setStep(1);
+      setShowEmailPrompt(false);
+      hasRestoredSession.current = false;
+    }
+  }, [isOpen]);
+
+  //  Handle payment complete 
+  const handlePaymentComplete = () => {
+    alert("✅ Payment complete! Thank you.");
+    onClose();
+  };
+
+  if (showEmailPrompt) {
+    return (
+      <EmailPrompt
+        isOpen={isOpen}
+        onClose={() => {
+          setShowEmailPrompt(false);
+          onClose();
+        }}
+        backend={backend}
+        projectData={projectData}
+        featuresData={featuresData}
+        checkAuthentication={checkAuthentication}
+      />
+    );
+  }
 
   return (
     <ReusableModal isOpen={isOpen} onClose={onClose} size="lg">
@@ -60,7 +138,7 @@ export default function RequirementsModal({ isOpen, onClose }) {
           </div>
         )}
 
-        {step === 3 && (
+        {step === 3 && isAuthenticated && (
           <div className="bg-gradient-to-br from-white to-blue-50 p-4 sm:p-6 rounded-lg">
             <FileUpload
               uploadedFiles={uploadedFiles}
@@ -71,7 +149,7 @@ export default function RequirementsModal({ isOpen, onClose }) {
           </div>
         )}
 
-        {step === 4 && (
+        {step === 4 && isAuthenticated && (
           <div className="bg-gradient-to-br from-white to-orange-50 p-4 sm:p-6 rounded-lg">
             <ReviewStep
               projectData={projectData}
@@ -83,17 +161,20 @@ export default function RequirementsModal({ isOpen, onClose }) {
           </div>
         )}
 
-        {step === 5 && (
+        {step === 5 && isAuthenticated && (
           <div className="bg-gradient-to-br from-white to-blue-50 sm:p-6 rounded-lg">
             <PaymentGateway
               projectData={projectData}
               featuresData={featuresData}
-              onClose={() => {
-                alert("✅ Payment complete! Thank you.");
-                onClose();
-              }}
+              onClose={handlePaymentComplete}
               prevStep={back}
             />
+          </div>
+        )}
+
+        {loading && (
+          <div className="flex justify-center p-4">
+            <FaSpinner className="animate-spin text-2xl" />
           </div>
         )}
       </div>

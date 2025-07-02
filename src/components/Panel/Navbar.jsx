@@ -6,12 +6,14 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import ReusableModal from '../reusable/ReusableModal';
 import UserProfileModal from './UserProfileModal';
+import RequirementsModal from '../Panel/projectTabs/RequirementsModal';
 
 const Navbar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { user, refetch,fetchUserData, backend} = useAuth();
+  const { user, refetch,fetchUserData,isAuthenticated, backend} = useAuth();
   const navigate = useNavigate();
+  const [requirementsModalOpen, setRequirementsModalOpen] = useState(false);
 
   const firstName = user?.name ? user.name.split(' ')[0].substring(0, 10) : 'Guest';
 
@@ -36,6 +38,18 @@ const Navbar = () => {
       console.error('Logout failed:', err.response?.data?.message || err.message);
     }
   };
+
+    //  Automatically open RequirementsModal if session data exists
+  useEffect(() => {
+    if (isAuthenticated && user?.email) {
+      const sessionKey = `sessionData_${user.email}`;
+      const stored = sessionStorage.getItem(sessionKey);
+
+      if (stored) {
+        setRequirementsModalOpen(true); // Open modal
+      }
+    }
+  }, [isAuthenticated, user]);
 
   return (
     <nav className="fixed top-0 left-0 w-full bg-white shadow-sm z-50">
@@ -116,6 +130,12 @@ const Navbar = () => {
       <ReusableModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <UserProfileModal/>
       </ReusableModal>
+
+      <RequirementsModal
+        isOpen={requirementsModalOpen}
+        onClose={() => setRequirementsModalOpen(false)}
+      />
+
     </nav>
   );
 };

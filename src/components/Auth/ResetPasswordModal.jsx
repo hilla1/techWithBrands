@@ -5,10 +5,12 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 
+// Email validation schema
 const emailSchema = z.object({
   email: z.string().email('Invalid email').nonempty('Email is required'),
 });
 
+// Password and OTP validation schema
 const passwordSchema = z
   .object({
     otp: z.string().length(6, 'OTP must be exactly 6 digits'),
@@ -20,28 +22,42 @@ const passwordSchema = z
     path: ['confirmPassword'],
   });
 
-const ResetPasswordModal = ({ isOpen, onClose }) => {
+const ResetPasswordModal = ({ isOpen, onClose, email }) => {
   const [step, setStep] = useState(1);
-  const [email, setEmail] = useState('');
+  const [emailValue, setEmailValue] = useState(email || '');
   const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [resendLoading, setResendLoading] = useState(false);
 
-  const emailForm = useForm({ resolver: zodResolver(emailSchema) });
+  // Email form
+  const emailForm = useForm({
+    resolver: zodResolver(emailSchema),
+    defaultValues: { email: email || '' },
+  });
+
+  // Password form
   const passwordForm = useForm({
     resolver: zodResolver(passwordSchema),
     defaultValues: { otp: '', newPassword: '', confirmPassword: '' },
   });
 
+  // Update OTP field whenever digits change
   useEffect(() => {
-    const fullOtp = otpDigits.join('');
-    passwordForm.setValue('otp', fullOtp);
-  }, [otpDigits]);
+    passwordForm.setValue('otp', otpDigits.join(''));
+  }, [otpDigits, passwordForm]);
+
+  // Sync email prop to internal state and form
+  useEffect(() => {
+    if (email) {
+      setEmailValue(email);
+      emailForm.setValue('email', email);
+    }
+  }, [email, emailForm]);
 
   const handleModalClose = () => {
     setStep(1);
-    setEmail('');
+    setEmailValue('');
     setOtpDigits(['', '', '', '', '', '']);
     emailForm.reset();
     passwordForm.reset();
@@ -57,7 +73,7 @@ const ResetPasswordModal = ({ isOpen, onClose }) => {
       });
 
       if (res.data.success) {
-        setEmail(data.email);
+        setEmailValue(data.email);
         setMessage('OTP has been sent to your email. Please enter the 6-digit code below to reset your password.');
         setStep(2);
       } else {
@@ -73,7 +89,10 @@ const ResetPasswordModal = ({ isOpen, onClose }) => {
   const handleResendOtp = async () => {
     setResendLoading(true);
     try {
-      const res = await axios.post(`${import.meta.env.VITE_API_URL}/auth/send-reset-otp`, { email });
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/auth/send-reset-otp`, {
+        email: emailValue,
+      });
+
       if (res.data.success) {
         setMessage('OTP resent. Please check your email again.');
       } else {
@@ -95,7 +114,7 @@ const ResetPasswordModal = ({ isOpen, onClose }) => {
     setLoading(true);
     try {
       const res = await axios.post(`${import.meta.env.VITE_API_URL}/auth/reset-password`, {
-        email,
+        email: emailValue,
         otp: data.otp,
         newPassword: data.newPassword,
       });
