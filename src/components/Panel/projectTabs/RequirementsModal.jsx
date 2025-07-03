@@ -9,6 +9,7 @@ import ReviewStep from "./requirement/ReviewStep";
 import PaymentGateway from "./requirement/PaymentGateway";
 import EmailPrompt from "./requirement/EmailPrompt";
 import { FaSpinner } from "react-icons/fa";
+import axios from "axios";
 
 const STEPS = [
   { id: 1, name: "Project Description", description: "Tell us about your project" },
@@ -38,7 +39,7 @@ export default function RequirementsModal({ isOpen, onClose }) {
 
   const back = () => step > 1 && setStep(step - 1);
 
-  // Restore session data, jump to step 3, and clear session storage
+  // Restore session data and jump to step 3
   useEffect(() => {
     if (
       isOpen &&
@@ -54,8 +55,8 @@ export default function RequirementsModal({ isOpen, onClose }) {
           const parsed = JSON.parse(stored);
           setProjectData(parsed.projectData || {});
           setFeaturesData(parsed.featuresData || { features: [], integrations: [] });
-          setStep(3); // Jump to step 3
-          sessionStorage.removeItem(sessionKey); //  Immediately clear after restoring
+          setStep(3); // jump to upload
+          sessionStorage.removeItem(sessionKey);
         } catch (err) {
           console.error("Error parsing session data", err);
         }
@@ -64,7 +65,7 @@ export default function RequirementsModal({ isOpen, onClose }) {
     }
   }, [isOpen, isAuthenticated, user]);
 
-  // Close email prompt when authentication is successful
+  // Close email prompt when authenticated
   useEffect(() => {
     if (isAuthenticated && showEmailPrompt) {
       setShowEmailPrompt(false);
@@ -72,21 +73,49 @@ export default function RequirementsModal({ isOpen, onClose }) {
     }
   }, [isAuthenticated, showEmailPrompt, step]);
 
-  // Reset state when modal closes
+  // Delete uploaded files on close and reset state
   useEffect(() => {
-    if (!isOpen) {
-      setStep(1);
-      setShowEmailPrompt(false);
-      hasRestoredSession.current = false;
-    }
-  }, [isOpen]);
+    if (!isOpen && uploadedFiles.length > 0) {
+      const deleteUploadedFiles = async () => {
+        for (const file of uploadedFiles) {
+          if (file.publicId) {
+            try {
+              await axios.post(
+                `${backend}/file/delete`,
+                { publicId: file.publicId },
+                {
+                  withCredentials: true,
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                }
+              );
+            } catch (err) {
+              console.error(`Failed to delete file "${file.name}":`, err.message);
+            }
+          }
+        }
+      };
 
-  //  Handle payment complete 
+      deleteUploadedFiles().finally(() => {
+        // Reset all state
+        setStep(1);
+        setProjectData({});
+        setFeaturesData({ features: [], integrations: [] });
+        setUploadedFiles([]);
+        setShowEmailPrompt(false);
+        hasRestoredSession.current = false;
+      });
+    }
+  }, [isOpen, uploadedFiles, backend]);
+
+  // Payment complete
   const handlePaymentComplete = () => {
     alert("✅ Payment complete! Thank you.");
     onClose();
   };
 
+  // Email prompt mode
   if (showEmailPrompt) {
     return (
       <EmailPrompt
@@ -105,7 +134,7 @@ export default function RequirementsModal({ isOpen, onClose }) {
 
   return (
     <ReusableModal isOpen={isOpen} onClose={onClose} size="lg">
-      {/* Progress Header */}
+      {/* Step Header */}
       <div className="mb-6 p-4 rounded-lg bg-gradient-to-r from-blue-100 to-orange-100">
         <StepProgress currentStep={step} steps={STEPS} />
       </div>

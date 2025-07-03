@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 import ReusableModal from '../reusable/ReusableModal';
 
@@ -6,6 +6,16 @@ const ResponseModal = ({ response, onClose }) => {
   const isOpen = !!response;
   const success = response?.success;
   const message = response?.message || '';
+
+  // Auto-close after 3 seconds
+  useEffect(() => {
+    if (isOpen) {
+      const timer = setTimeout(() => {
+        onClose?.();
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, onClose]);
 
   return (
     <ReusableModal isOpen={isOpen} onClose={onClose}>

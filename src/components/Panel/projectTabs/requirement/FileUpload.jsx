@@ -1,10 +1,10 @@
 import {
   FiUpload,
-  FiFile,
-  FiX,
   FiArrowLeft,
   FiArrowRight,
 } from "react-icons/fi";
+import { useState, useRef } from "react";
+import ManageFile from "../../ManageFile";
 
 export default function FileUpload({
   uploadedFiles,
@@ -12,59 +12,83 @@ export default function FileUpload({
   prevStep,
   nextStep,
 }) {
-  const onChange = (e) => {
-    const added = Array.from(e.target.files).map((f) => ({
-      id: Date.now() + Math.random(),
-      name: f.name,
-      size: f.size,
-    }));
-    setUploadedFiles([...uploadedFiles, ...added]);
+  const [isDragging, setIsDragging] = useState(false);
+  const dropRef = useRef(null);
+
+  const handleFiles = (files) => {
+    const newFiles = Array.from(files).map((file) => {
+      const id = Date.now() + Math.random();
+      const fileData = {
+        id,
+        name: file.name,
+        size: file.size,
+        raw: file,
+      };
+      setUploadedFiles((prev) => [...prev, fileData]);
+      return fileData;
+    });
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFiles(e.dataTransfer.files);
+      e.dataTransfer.clearData();
+    }
+  };
+
+  const handleFileChange = (e) => {
+    handleFiles(e.target.files);
+  };
+
+  const removeFile = (id) => {
+    setUploadedFiles((prev) => prev.filter((f) => f.id !== id));
   };
 
   return (
     <div className="space-y-6">
-      {/* Heading */}
-      <h2 className="text-xl sm:text-2xl font-semibold text-gray-800">
-        Upload Files
-      </h2>
+      <h2 className="text-xl sm:text-2xl font-semibold text-gray-800">Upload Files</h2>
 
       {/* Dropzone */}
-      <label className="block cursor-pointer">
-        <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-md p-6 sm:p-8 hover:border-[#2E3191] transition">
+      <div
+        ref={dropRef}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        className={`border-2 border-dashed rounded-md p-6 sm:p-8 cursor-pointer transition
+          ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-[#2E3191]'}
+        `}
+        onClick={() => dropRef.current.querySelector("input").click()}
+      >
+        <div className="flex flex-col items-center justify-center text-center">
           <FiUpload className="text-gray-400 mb-2 w-8 h-8" />
-          <p className="text-sm sm:text-base text-gray-600 text-center">
+          <p className="text-sm sm:text-base text-gray-600">
             Click or drag files here to upload
           </p>
         </div>
-        <input type="file" multiple onChange={onChange} className="hidden" />
-      </label>
+        <input
+          type="file"
+          multiple
+          onChange={handleFileChange}
+          className="hidden"
+        />
+      </div>
 
       {/* Uploaded File List */}
       <div className="space-y-2">
         {uploadedFiles.map((file) => (
-          <div
-            key={file.id}
-            className="flex justify-between items-center bg-gray-50 border border-gray-200 rounded-md px-4 py-2 overflow-auto"
-          >
-            <div className="flex items-center gap-3 overflow-hidden">
-              <FiFile className="text-gray-400 shrink-0" />
-              <div className="truncate">
-                <p className="text-sm text-gray-800 truncate">{file.name}</p>
-                <p className="text-xs text-gray-500">
-                  {(file.size / 1024).toFixed(2)} KB
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() =>
-                setUploadedFiles(uploadedFiles.filter((x) => x.id !== file.id))
-              }
-              className="text-red-500 hover:text-red-700"
-              aria-label="Remove file"
-            >
-              <FiX />
-            </button>
-          </div>
+          <ManageFile key={file.id} file={file} onRemove={removeFile} />
         ))}
       </div>
 

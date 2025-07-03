@@ -7,13 +7,15 @@ import { useNavigate } from 'react-router-dom';
 import ReusableModal from '../reusable/ReusableModal';
 import UserProfileModal from './UserProfileModal';
 import RequirementsModal from '../Panel/projectTabs/RequirementsModal';
+import OtpModal from './user/OtpModal'; 
 
 const Navbar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const { user, refetch,fetchUserData,isAuthenticated, backend} = useAuth();
-  const navigate = useNavigate();
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
   const [requirementsModalOpen, setRequirementsModalOpen] = useState(false);
+  const { user, refetch, fetchUserData, isAuthenticated, backend } = useAuth();
+  const navigate = useNavigate();
 
   const firstName = user?.name ? user.name.split(' ')[0].substring(0, 10) : 'Guest';
 
@@ -39,17 +41,27 @@ const Navbar = () => {
     }
   };
 
-    //  Automatically open RequirementsModal if session data exists
+  // Open RequirementsModal automatically if session data exists
   useEffect(() => {
     if (isAuthenticated && user?.email) {
       const sessionKey = `sessionData_${user.email}`;
       const stored = sessionStorage.getItem(sessionKey);
-
       if (stored) {
-        setRequirementsModalOpen(true); // Open modal
+        setRequirementsModalOpen(true);
       }
     }
   }, [isAuthenticated, user]);
+
+  // Handlers for modal coordination
+  const handleOpenOtp = () => {
+    setIsProfileModalOpen(false); // Close profile modal
+    setIsOtpModalOpen(true);      // Open OTP modal
+  };
+
+  const handleCloseOtpAndReopenProfile = () => {
+    setIsOtpModalOpen(false);
+    setIsProfileModalOpen(true);
+  };
 
   return (
     <nav className="fixed top-0 left-0 w-full bg-white shadow-sm z-50">
@@ -102,7 +114,7 @@ const Navbar = () => {
                 <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100 z-50">
                   <button
                     onClick={() => {
-                      setIsModalOpen(true);
+                      setIsProfileModalOpen(true);
                       setIsDropdownOpen(false);
                     }}
                     className="w-full text-left flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gradient-to-r from-[#aab3ff] to-[#ffd6a1] hover:text-white transition"
@@ -126,16 +138,27 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Modal */}
-      <ReusableModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <UserProfileModal/>
+      {/* Profile Modal */}
+      <ReusableModal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)}>
+        <UserProfileModal
+          onClose={() => setIsProfileModalOpen(false)}
+          onOtpOpen={handleOpenOtp}
+        />
       </ReusableModal>
 
+      {/* OTP Modal */}
+      <ReusableModal isOpen={isOtpModalOpen} onClose={handleCloseOtpAndReopenProfile}>
+        <OtpModal
+          onClose={() => setIsOtpModalOpen(false)}
+          reopenProfile={handleCloseOtpAndReopenProfile}
+        />
+      </ReusableModal>
+
+      {/* Requirements Modal */}
       <RequirementsModal
         isOpen={requirementsModalOpen}
         onClose={() => setRequirementsModalOpen(false)}
       />
-
     </nav>
   );
 };
