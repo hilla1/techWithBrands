@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { FaBell, FaCog, FaUserCircle, FaSignOutAlt, FaUser } from 'react-icons/fa';
+import {
+  FaBell,
+  FaCog,
+  FaUserCircle,
+  FaSignOutAlt,
+  FaUser,
+} from 'react-icons/fa';
 import twbLogo1 from '../../assets/twbLogo1.png';
 import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
@@ -7,13 +13,18 @@ import { useNavigate } from 'react-router-dom';
 import ReusableModal from '../reusable/ReusableModal';
 import UserProfileModal from './UserProfileModal';
 import RequirementsModal from '../Panel/projectTabs/RequirementsModal';
-import OtpModal from './user/OtpModal'; 
+import OtpModal from './user/OtpModal';
+import LogoutOverlay from './LogoutOverlay';
+import ResponseModal from './ResponseModal';
 
 const Navbar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
   const [requirementsModalOpen, setRequirementsModalOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState(null);
+
   const { user, refetch, fetchUserData, isAuthenticated, backend } = useAuth();
   const navigate = useNavigate();
 
@@ -27,21 +38,26 @@ const Navbar = () => {
         setIsDropdownOpen(false);
       }
     };
+
     document.addEventListener('click', closeDropdown);
     return () => document.removeEventListener('click', closeDropdown);
   }, []);
 
   const handleLogout = async () => {
+    setIsLoggingOut(true);
     try {
       await axios.post(`${backend}/auth/logout`, {}, { withCredentials: true });
       await refetch();
       navigate('/');
     } catch (err) {
-      console.error('Logout failed:', err.response?.data?.message || err.message);
+      setLogoutError({
+        success: false,
+        message: err.response?.data?.message || 'Logout failed. Please try again.',
+      });
+      setIsLoggingOut(false);
     }
   };
 
-  // Open RequirementsModal automatically if session data exists
   useEffect(() => {
     if (isAuthenticated && user?.email) {
       const sessionKey = `sessionData_${user.email}`;
@@ -52,10 +68,9 @@ const Navbar = () => {
     }
   }, [isAuthenticated, user]);
 
-  // Handlers for modal coordination
   const handleOpenOtp = () => {
-    setIsProfileModalOpen(false); // Close profile modal
-    setIsOtpModalOpen(true);      // Open OTP modal
+    setIsProfileModalOpen(false);
+    setIsOtpModalOpen(true);
   };
 
   const handleCloseOtpAndReopenProfile = () => {
@@ -67,7 +82,6 @@ const Navbar = () => {
     <nav className="fixed top-0 left-0 w-full bg-white shadow-sm z-50">
       <div className="max-w-screen-2xl mx-auto px-4">
         <div className="xl:mx-20 md:mx-2 flex items-center justify-between h-16">
-
           {/* Logo */}
           <div className="flex-shrink-0">
             <img src={twbLogo1} alt="TWB Logo" className="h-8 sm:h-10 w-auto" />
@@ -115,7 +129,7 @@ const Navbar = () => {
                   <button
                     onClick={() => {
                       setIsProfileModalOpen(true);
-                      setIsDropdownOpen(false);
+                      setIsDropdownOpen(false); // ✅ closes dropdown
                     }}
                     className="w-full text-left flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gradient-to-r from-[#aab3ff] to-[#ffd6a1] hover:text-white transition"
                   >
@@ -124,8 +138,12 @@ const Navbar = () => {
                   </button>
 
                   <div className="border-t border-gray-200"></div>
+
                   <button
-                    onClick={handleLogout}
+                    onClick={() => {
+                      setIsDropdownOpen(false); // ✅ closes dropdown
+                      handleLogout();
+                    }}
                     className="w-full text-left flex items-center px-4 py-2 text-sm text-red-600 hover:bg-gradient-to-r from-[#aab3ff] to-[#ffd6a1] hover:text-white transition"
                   >
                     <FaSignOutAlt className="mr-2" />
@@ -159,6 +177,17 @@ const Navbar = () => {
         isOpen={requirementsModalOpen}
         onClose={() => setRequirementsModalOpen(false)}
       />
+
+      {/* Logout Overlay */}
+      {isLoggingOut && <LogoutOverlay />}
+
+      {/* Logout Error Modal */}
+      {logoutError && (
+        <ResponseModal
+          response={logoutError}
+          onClose={() => setLogoutError(null)}
+        />
+      )}
     </nav>
   );
 };

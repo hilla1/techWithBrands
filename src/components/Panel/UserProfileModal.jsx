@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -40,6 +40,16 @@ const UserProfileModal = ({ onClose, onOtpOpen }) => {
   const showModal = (success, message) => {
     setModalData({ success, message });
   };
+
+  // Auto-close modal after 3 seconds
+  useEffect(() => {
+    if (modalData) {
+      const timer = setTimeout(() => {
+        setModalData(null);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [modalData]);
 
   const handlePasswordSubmit = async (data) => {
     try {
