@@ -27,11 +27,6 @@ const DashboardTab = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
 
-  // Refs to simulate "previous" counts
-  const prevConsultationsRef = useRef(0);
-  const prevProjectsRef = useRef(0);
-  const prevClientsRef = useRef(0);
-
   const fetchProjects = async () => {
     setLoading(true);
     try {
@@ -75,26 +70,63 @@ const DashboardTab = () => {
   const completedProjects = projects.filter((p) => p.progress === 100);
   const totalConsultations = consultations.length;
 
-  // Client calculation based on role
   let totalClients = 0;
-  if (user?.role === 'admin') {
+  if (user?.role === 'admin' || user?.role === 'consultant') {
     const consultationUsers = consultations.map((c) => c.user?._id);
     const projectUsers = projects.map((p) => p.user?._id);
     const allUserIds = [...new Set([...consultationUsers, ...projectUsers])];
     totalClients = allUserIds.length;
-  } else if (user?.role === 'consultant') {
-    const clientIds = new Set();
-    consultations.forEach((c) => {
-      if (c.user?._id) clientIds.add(c.user._id);
-    });
-    totalClients = clientIds.size;
   }
 
   const scheduledCount = consultations.filter(
     (c) => c.status === 'scheduled'
   ).length;
 
-  // Change calculations
+  // === Timestamp-based comparison ===
+  const getWeekRanges = () => {
+    const now = new Date();
+    const thisWeekStart = new Date(now);
+    thisWeekStart.setDate(now.getDate() - 7);
+
+    const lastWeekStart = new Date(now);
+    lastWeekStart.setDate(now.getDate() - 14);
+
+    const lastWeekEnd = new Date(now);
+    lastWeekEnd.setDate(now.getDate() - 7);
+
+    return { thisWeekStart, lastWeekStart, lastWeekEnd };
+  };
+
+  const { thisWeekStart, lastWeekStart, lastWeekEnd } = getWeekRanges();
+
+  const consultationsThisWeek = consultations.filter(
+    (c) => new Date(c.createdAt) >= thisWeekStart
+  );
+  const consultationsLastWeek = consultations.filter(
+    (c) =>
+      new Date(c.createdAt) >= lastWeekStart &&
+      new Date(c.createdAt) < lastWeekEnd
+  );
+
+  const projectsThisWeek = activeProjects.filter(
+    (p) => new Date(p.createdAt) >= thisWeekStart
+  );
+  const projectsLastWeek = activeProjects.filter(
+    (p) =>
+      new Date(p.createdAt) >= lastWeekStart &&
+      new Date(p.createdAt) < lastWeekEnd
+  );
+
+  const uniqueUsersThisWeek = new Set([
+    ...consultationsThisWeek.map((c) => c.user?._id),
+    ...projectsThisWeek.map((p) => p.user?._id),
+  ]);
+
+  const uniqueUsersLastWeek = new Set([
+    ...consultationsLastWeek.map((c) => c.user?._id),
+    ...projectsLastWeek.map((p) => p.user?._id),
+  ]);
+
   const calculateChange = (current, previous) => {
     if (previous === 0 && current > 0) return '+100%';
     if (previous === 0 && current === 0) return '0%';
@@ -103,21 +135,17 @@ const DashboardTab = () => {
   };
 
   const consultationChange = calculateChange(
-    totalConsultations,
-    prevConsultationsRef.current
+    consultationsThisWeek.length,
+    consultationsLastWeek.length
   );
   const projectChange = calculateChange(
-    activeProjects.length,
-    prevProjectsRef.current
+    projectsThisWeek.length,
+    projectsLastWeek.length
   );
-  const clientChange = calculateChange(totalClients, prevClientsRef.current);
-
-  // Update refs with latest values
-  useEffect(() => {
-    prevConsultationsRef.current = totalConsultations;
-    prevProjectsRef.current = activeProjects.length;
-    prevClientsRef.current = totalClients;
-  }, [totalConsultations, activeProjects.length, totalClients]);
+  const clientChange = calculateChange(
+    uniqueUsersThisWeek.size,
+    uniqueUsersLastWeek.size
+  );
 
   const role = user?.role;
 
@@ -201,22 +229,9 @@ const DashboardTab = () => {
   }
 
   return (
-    <div className="pb-2">
-      {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-        {cardData.map((card, index) => (
-          <ProjectCard
-            key={index}
-            icon={card.icon}
-            title={card.title}
-            value={card.value}
-            change={card.change}
-          />
-        ))}
-      </div>
-
-      {/* Highlights Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="pb-2 flex flex-col">
+      {/* Highlights Section (Consultations + Projects) */}
+      <div className="order-1 md:order-2 grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
         <UpcomingConsultationList
           consultations={consultations}
           setConsultations={setConsultations}
@@ -231,6 +246,19 @@ const DashboardTab = () => {
           onViewMoreClick={() => setActiveTab('Projects')}
           onProjectClick={handleProjectClick}
         />
+      </div>
+
+      {/* Stat Cards (Mobile: bottom, Desktop: top) */}
+      <div className="order-2 md:order-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        {cardData.map((card, index) => (
+          <ProjectCard
+            key={index}
+            icon={card.icon}
+            title={card.title}
+            value={card.value}
+            change={card.change}
+          />
+        ))}
       </div>
 
       {/* Create Project Modal */}
