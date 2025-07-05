@@ -69,6 +69,9 @@ const ProjectOverview = ({
                   <p className="text-sm text-gray-500 mt-1">
                     Client: {project.client?.name || 'N/A'}
                   </p>
+
+                  {/* Add divider line if there's only one project */}
+                  {projects.length === 1 && <hr className="mt-4 border-gray-200" />}
                 </li>
               ))}
             </ul>
