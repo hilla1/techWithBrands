@@ -46,7 +46,7 @@ const UpcomingConsultationList = ({
 
       {/* Spinner */}
       {loading ? (
-        <div className="flex justify-center items-center min-h-[150px]">
+        <div className="absolute inset-0 flex justify-center items-center z-10">
           <FaSpinner className="animate-spin text-2xl text-[#2E3191]" />
         </div>
       ) : consultations.length === 0 ? (
@@ -89,10 +89,21 @@ const UpcomingConsultationList = ({
                   <div className="flex-1">
                     <p className="font-semibold text-gray-800">{fullName}</p>
                     <p className="text-sm text-gray-500">{timeSlot}</p>
+
+                    {/* Show status stacked only on lg and below, hidden on md+ */}
+                    <span
+                      className={`block lg:hidden mt-1 w-max px-3 py-0.5 text-xs rounded-full font-medium shadow-sm backdrop-blur-sm ${
+                        statusBadge[status] ||
+                        'bg-gray-100/30 text-gray-700 border border-gray-300'
+                      }`}
+                    >
+                      {status}
+                    </span>
                   </div>
 
+                  {/* Show absolute badge on md+ only (hidden on lg and below) */}
                   <span
-                    className={`absolute bottom-2 right-2 px-3 py-0.5 text-xs rounded-full font-medium shadow-sm backdrop-blur-sm ${
+                    className={`hidden lg:block absolute bottom-2 right-2 px-3 py-0.5 text-xs rounded-full font-medium shadow-sm backdrop-blur-sm ${
                       statusBadge[status] ||
                       'bg-gray-100/30 text-gray-700 border border-gray-300'
                     }`}
