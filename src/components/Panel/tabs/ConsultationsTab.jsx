@@ -1,40 +1,26 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import { FiEdit } from 'react-icons/fi';
 import { useAuth } from '../../../context/AuthContext';
 import ConsultationModal from '../../reusable/ConsultationModal';
 import ConsultationModalTabs from '../ConsultationModalTabs';
-import EmptyConsultation from '../EmptyConsultation'; 
+import EmptyConsultation from '../EmptyConsultation';
 
 const ConsultationsTab = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
-  const [consultations, setConsultations] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const { backend } = useAuth();
+  const {
+    consultations,
+    fetchConsultations,
+    consultationsLoading: loading,
+  } = useAuth();
 
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
   const [selectedConsultation, setSelectedConsultation] = useState(null);
 
-  // Fetch consultations
-  const fetchConsultations = async () => {
-    try {
-      const res = await axios.get(`${backend}/consultation/get-consultations`, {
-        withCredentials: true,
-      });
-      setConsultations(res.data.consultations || []);
-    } catch (error) {
-      console.error('Error fetching consultations:', error.response?.data || error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
     fetchConsultations();
-  }, []);
+  }, [fetchConsultations]);
 
-  // Filter and Search
   const filteredConsultations = consultations.filter((c) => {
     const clientName = c.user?.fullName || 'Unknown';
     return (
@@ -184,7 +170,7 @@ const ConsultationsTab = () => {
         onClose={() => setCreateModalOpen(false)}
       />
 
-      {/* Edit/View Modal with Delete Option inside */}
+      {/* Edit/View Modal */}
       {selectedConsultation && (
         <ConsultationModalTabs
           isOpen={true}

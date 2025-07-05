@@ -15,6 +15,7 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider = ({ children }) => {
   const { useApiQuery, useApiMutation } = useApi();
 
+  // ---------- USER & AUTH ----------
   const {
     data: userDataResponse,
     isLoading: userLoading,
@@ -47,22 +48,40 @@ export const AuthProvider = ({ children }) => {
     checkAuthentication();
   }, [checkAuthentication]);
 
-  const loading = userLoading || authLoading;
-  const error = userError || authError;
-
   const user = useMemo(() => userDataResponse?.userData ?? null, [userDataResponse]);
   const role = useMemo(() => authResponse?.role ?? null, [authResponse]);
 
   const isAuthenticated = useMemo(() => {
-    if (loading) return null;
+    if (userLoading || authLoading) return null;
     return !!authResponse?.success;
-  }, [authResponse, loading]);
+  }, [authResponse, userLoading, authLoading]);
+
+  const loading = userLoading || authLoading;
+  const error = userError || authError;
 
   const refetch = useCallback(async () => {
     await Promise.all([fetchUserData(), checkAuthentication()]);
   }, [fetchUserData, checkAuthentication]);
 
   const [activeTab, setActiveTab] = useState('Dashboard');
+
+  // ---------- PROJECTS ----------
+  const {
+    data: projectResponse,
+    isLoading: projectsLoading,
+    refetch: fetchProjects,
+  } = useApiQuery('/project', { retry: false });
+
+  const projects = projectResponse?.projects || [];
+
+  // ---------- CONSULTATIONS ----------
+  const {
+    data: consultationResponse,
+    isLoading: consultationsLoading,
+    refetch: fetchConsultations,
+  } = useApiQuery('/consultation/get-consultations', { retry: false });
+
+  const consultations = consultationResponse?.consultations || [];
 
   return (
     <AuthContext.Provider
@@ -72,12 +91,22 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated,
         loading,
         error,
+        backend,
         fetchUserData,
         checkAuthentication,
         refetch,
-        backend,
         activeTab,
         setActiveTab,
+
+        // Project state
+        projects,
+        fetchProjects,
+        projectsLoading,
+
+        // Consultation state
+        consultations,
+        fetchConsultations,
+        consultationsLoading,
       }}
     >
       {children}

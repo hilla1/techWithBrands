@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   FaUserFriends,
   FaProjectDiagram,
@@ -7,7 +7,6 @@ import {
   FaCalendarAlt,
   FaCheckCircle,
 } from 'react-icons/fa';
-import axios from 'axios';
 import { useAuth } from '../../../context/AuthContext';
 import futuristicAnimation from '../../../assets/lotties/futuristic.json';
 
@@ -18,71 +17,45 @@ import ProjectDashboard from '../projectTabs/ProjectDashboard';
 import RequirementsModal from '../projectTabs/RequirementsModal';
 
 const DashboardTab = () => {
-  const { backend, setActiveTab, user } = useAuth();
+  const {
+    user,
+    consultations,
+    fetchConsultations,
+    consultationsLoading,
+    projects,
+    fetchProjects,
+    projectsLoading,
+    setActiveTab,
+  } = useAuth();
 
-  const [projects, setProjects] = useState([]);
-  const [consultations, setConsultations] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [consultationLoading, setConsultationLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
 
-  const fetchProjects = async () => {
-    setLoading(true);
-    try {
-      const res = await axios.get(`${backend}/project`, {
-        withCredentials: true,
-      });
-      if (res.data?.success) {
-        setProjects(res.data.projects);
-      }
-    } catch (err) {
-      console.error('Failed to fetch projects:', err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchConsultations = async () => {
-    setConsultationLoading(true);
-    try {
-      const res = await axios.get(`${backend}/consultation/get-consultations`, {
-        withCredentials: true,
-      });
-      if (res.data?.consultations) {
-        setConsultations(res.data.consultations);
-      }
-    } catch (err) {
-      console.error('Failed to fetch consultations:', err.message);
-    } finally {
-      setConsultationLoading(false);
-    }
-  };
-
+  // Fetch consultations & projects when component mounts
   useEffect(() => {
-    fetchProjects();
-    fetchConsultations();
+    fetchConsultations?.();
+    fetchProjects?.();
   }, []);
 
   const activeProjects = projects.filter(
-    (project) => project.progress > 0 && project.progress < 100
+    (p) => p.progress > 0 && p.progress < 100
   );
   const completedProjects = projects.filter((p) => p.progress === 100);
+
+  const scheduledConsultations = consultations.filter((c) =>
+    ['scheduled', 'rescheduled'].includes(c.status?.toLowerCase())
+  );
   const totalConsultations = consultations.length;
 
+  // AUnique Clients Calculation
   let totalClients = 0;
   if (user?.role === 'admin' || user?.role === 'consultant') {
-    const consultationUsers = consultations.map((c) => c.user?._id);
-    const projectUsers = projects.map((p) => p.user?._id);
-    const allUserIds = [...new Set([...consultationUsers, ...projectUsers])];
-    totalClients = allUserIds.length;
+    const consultationUserIds = consultations.map((c) => c.user?._id?.toString());
+    const projectUserIds = projects.map((p) => p.user?._id?.toString());
+    const allUserIds = new Set([...consultationUserIds, ...projectUserIds].filter(Boolean));
+    totalClients = allUserIds.size;
   }
 
-  const scheduledCount = consultations.filter(
-    (c) => c.status === 'scheduled'
-  ).length;
-
-  // === Timestamp-based comparison ===
   const getWeekRanges = () => {
     const now = new Date();
     const thisWeekStart = new Date(now);
@@ -118,13 +91,13 @@ const DashboardTab = () => {
   );
 
   const uniqueUsersThisWeek = new Set([
-    ...consultationsThisWeek.map((c) => c.user?._id),
-    ...projectsThisWeek.map((p) => p.user?._id),
+    ...consultationsThisWeek.map((c) => c.user?._id?.toString()),
+    ...projectsThisWeek.map((p) => p.user?._id?.toString()),
   ]);
 
   const uniqueUsersLastWeek = new Set([
-    ...consultationsLastWeek.map((c) => c.user?._id),
-    ...projectsLastWeek.map((p) => p.user?._id),
+    ...consultationsLastWeek.map((c) => c.user?._id?.toString()),
+    ...projectsLastWeek.map((p) => p.user?._id?.toString()),
   ]);
 
   const calculateChange = (current, previous) => {
@@ -147,6 +120,7 @@ const DashboardTab = () => {
     uniqueUsersLastWeek.size
   );
 
+  const scheduledCount = scheduledConsultations.length;
   const role = user?.role;
 
   const baseCards = [
@@ -230,17 +204,17 @@ const DashboardTab = () => {
 
   return (
     <div className="pb-2 flex flex-col">
-      {/* Highlights Section (Consultations + Projects) */}
+      {/* Highlights Section */}
       <div className="order-1 md:order-2 grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
         <UpcomingConsultationList
           consultations={consultations}
-          setConsultations={setConsultations}
+          setConsultations={() => {}}
           fetchConsultations={fetchConsultations}
-          loading={consultationLoading}
+          loading={consultationsLoading}
         />
         <ProjectOverview
           projects={projects}
-          loading={loading}
+          loading={projectsLoading}
           animation={futuristicAnimation}
           onCreateClick={() => setIsModalOpen(true)}
           onViewMoreClick={() => setActiveTab('Projects')}
@@ -248,7 +222,7 @@ const DashboardTab = () => {
         />
       </div>
 
-      {/* Stat Cards (Mobile: bottom, Desktop: top) */}
+      {/* Stat Cards */}
       <div className="order-2 md:order-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-4">
         {cardData.map((card, index) => (
           <ProjectCard

@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useEffect, useState } from 'react';
 import { FiMoreVertical } from 'react-icons/fi';
 import { FaSpinner } from 'react-icons/fa';
 import { useAuth } from '../../../context/AuthContext';
@@ -8,33 +7,20 @@ import RequirementsModal from '../projectTabs/RequirementsModal';
 import EmptyProjectState from '../projectTabs/project/EmptyProjectState';
 
 const ProjectsTab = () => {
-  const { backend } = useAuth();
-  const [projects, setProjects] = useState([]);
+  const {
+    fetchProjects,
+    projects,
+    projectsLoading,
+  } = useAuth();
+
   const [selectedProject, setSelectedProject] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterProgress, setFilterProgress] = useState('All');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  const fetchProjects = async () => {
-    setLoading(true);
-    try {
-      const res = await axios.get(`${backend}/project`, {
-        withCredentials: true,
-      });
-      if (res.data?.success) {
-        setProjects(res.data.projects);
-      }
-    } catch (err) {
-      console.error('Failed to fetch projects:', err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
     fetchProjects();
-  }, []);
+  }, [fetchProjects]);
 
   const filteredProjects = projects.filter((project) => {
     const matchesSearch =
@@ -103,7 +89,7 @@ const ProjectsTab = () => {
       </div>
 
       {/* Content */}
-      {loading ? (
+      {projectsLoading ? (
         <div className="flex justify-center items-center h-60">
           <FaSpinner className="animate-spin text-3xl text-[#2E3191]" />
         </div>
@@ -149,7 +135,7 @@ const ProjectsTab = () => {
         isOpen={isModalOpen}
         onClose={() => {
           setIsModalOpen(false);
-          fetchProjects(); 
+          fetchProjects();
         }}
       />
     </div>
