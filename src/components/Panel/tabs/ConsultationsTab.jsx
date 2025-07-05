@@ -4,6 +4,7 @@ import { FiEdit } from 'react-icons/fi';
 import { useAuth } from '../../../context/AuthContext';
 import ConsultationModal from '../../reusable/ConsultationModal';
 import ConsultationModalTabs from '../ConsultationModalTabs';
+import EmptyConsultation from '../EmptyConsultation'; 
 
 const ConsultationsTab = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -143,34 +144,38 @@ const ConsultationsTab = () => {
 
       {/* Mobile View Cards */}
       <div className="block md:hidden space-y-4">
-        {filteredConsultations.map((c) => (
-          <div key={c._id} className="relative rounded-xl border border-gray-200 bg-white shadow-sm p-4">
-            <div className="absolute top-0 left-0 w-full h-1 rounded-t-xl bg-gradient-to-r from-[#aab3ff] to-[#ffd6a1]" />
-            <div className="flex justify-between items-start mb-3">
-              <h3 className="text-lg font-semibold text-[#2E3191]">{c.user?.name || 'N/A'}</h3>
-              <button
-                className="text-blue-600 hover:text-blue-800 text-sm"
-                onClick={() => setSelectedConsultation(c)}
-              >
-                <FiEdit />
-              </button>
+        {!loading && filteredConsultations.length === 0 ? (
+          <EmptyConsultation onCreated={fetchConsultations} />
+        ) : (
+          filteredConsultations.map((c) => (
+            <div key={c._id} className="relative rounded-xl border border-gray-200 bg-white shadow-sm p-4">
+              <div className="absolute top-0 left-0 w-full h-1 rounded-t-xl bg-gradient-to-r from-[#aab3ff] to-[#ffd6a1]" />
+              <div className="flex justify-between items-start mb-3">
+                <h3 className="text-lg font-semibold text-[#2E3191]">{c.user?.name || 'N/A'}</h3>
+                <button
+                  className="text-blue-600 hover:text-blue-800 text-sm"
+                  onClick={() => setSelectedConsultation(c)}
+                >
+                  <FiEdit />
+                </button>
+              </div>
+              <p><span className={gradientTextClass}>Contact: </span>{c.user?.email}</p>
+              <p><span className={gradientTextClass}>Time Slot: </span>{c.timeSlot}</p>
+              <p><span className={gradientTextClass}>Services: </span>{(c.services || []).join(', ')}</p>
+              <p><span className={gradientTextClass}>Handlers: </span>
+                {(c.handlers || []).map((h, idx) => (
+                  <span key={idx} className="text-sm text-gray-700 block">{h.name || h.email}</span>
+                ))}
+              </p>
+              <p>
+                <span className={gradientTextClass}>Status: </span>
+                <span className={`ml-1 px-2 py-0.5 rounded-full text-xs font-semibold ${statusBadge[c.status]}`}>
+                  {c.status}
+                </span>
+              </p>
             </div>
-            <p><span className={gradientTextClass}>Contact: </span>{c.user?.email}</p>
-            <p><span className={gradientTextClass}>Time Slot: </span>{c.timeSlot}</p>
-            <p><span className={gradientTextClass}>Services: </span>{(c.services || []).join(', ')}</p>
-            <p><span className={gradientTextClass}>Handlers: </span>
-              {(c.handlers || []).map((h, idx) => (
-                <span key={idx} className="text-sm text-gray-700 block">{h.name || h.email}</span>
-              ))}
-            </p>
-            <p>
-              <span className={gradientTextClass}>Status: </span>
-              <span className={`ml-1 px-2 py-0.5 rounded-full text-xs font-semibold ${statusBadge[c.status]}`}>
-                {c.status}
-              </span>
-            </p>
-          </div>
-        ))}
+          ))
+        )}
       </div>
 
       {/* Create Consultation Modal */}
@@ -186,7 +191,7 @@ const ConsultationsTab = () => {
           onClose={() => setSelectedConsultation(null)}
           consultation={selectedConsultation}
           onUpdate={fetchConsultations}
-          onDelete={fetchConsultations} // delete now triggered inside the modal
+          onDelete={fetchConsultations}
         />
       )}
     </div>
