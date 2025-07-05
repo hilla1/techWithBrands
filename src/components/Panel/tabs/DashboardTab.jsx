@@ -231,7 +231,7 @@ const DashboardTab = () => {
   return (
     <div className="pb-2 flex flex-col">
       {/* Highlights Section (Consultations + Projects) */}
-      <div className="order-1 md:order-2 grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+      <div className="order-1 md:order-2 grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
         <UpcomingConsultationList
           consultations={consultations}
           setConsultations={setConsultations}
@@ -249,7 +249,7 @@ const DashboardTab = () => {
       </div>
 
       {/* Stat Cards (Mobile: bottom, Desktop: top) */}
-      <div className="order-2 md:order-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+      <div className="order-2 md:order-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-4">
         {cardData.map((card, index) => (
           <ProjectCard
             key={index}

@@ -7,31 +7,42 @@ const ProjectOverview = ({
   loading,
   onCreateClick,
   onViewMoreClick,
-  onProjectClick, 
+  onProjectClick,
   animation,
 }) => {
+  const hasProjects = projects.length > 0;
+
   return (
     <div className="bg-white p-4 rounded-xl shadow min-h-[300px] flex flex-col">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold text-[#2E3191]">All Projects</h3>
-        <button
-          onClick={onCreateClick}
-          className="inline-flex items-center gap-1 text-sm font-semibold bg-clip-text text-transparent bg-gradient-to-r from-[#F89F2D] to-[#2E3191] hover:opacity-80 transition"
-        >
-          <span className="text-lg">+</span> Create Project
-        </button>
-      </div>
+      {/* Show header only when there are projects */}
+      {hasProjects && (
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold text-[#2E3191]">All Projects</h3>
+          <button
+            onClick={onCreateClick}
+            className="inline-flex items-center gap-1 text-sm font-semibold bg-clip-text text-transparent bg-gradient-to-r from-[#F89F2D] to-[#2E3191] hover:opacity-80 transition"
+          >
+            <span className="text-lg">+</span> Create Project
+          </button>
+        </div>
+      )}
 
       {loading ? (
-        <div className="flex justify-center items-center h-40">
+        <div className="flex-grow flex justify-center items-center">
           <FaSpinner className="animate-spin text-2xl text-[#2E3191]" />
         </div>
-      ) : projects.length === 0 ? (
+      ) : !hasProjects ? (
         <div className="flex flex-col items-center justify-center text-center px-4">
-          <div className="w-48 sm:w-64 mb-4">
+          <div className="w-48 sm:w-56 mb-4">
             <Lottie animationData={animation} loop autoplay />
           </div>
           <p className="text-sm text-gray-600">No projects available.</p>
+          <button
+            onClick={onCreateClick}
+            className="mt-2 text-md lg:text-lg font-semibold bg-clip-text text-transparent bg-gradient-to-r from-[#2E3191] to-[#F89F2D] hover:underline transition"
+          >
+            + Create Project
+          </button>
         </div>
       ) : (
         <>
@@ -40,7 +51,7 @@ const ProjectOverview = ({
               {projects.slice(0, 3).map((project, idx) => (
                 <li
                   key={idx}
-                  onClick={() => onProjectClick?.(project)} //  Handle click
+                  onClick={() => onProjectClick?.(project)}
                   className="py-4 px-2 hover:bg-slate-50 hover:shadow-sm rounded-lg transition cursor-pointer"
                 >
                   <div className="flex justify-between items-center mb-1 text-sm">
