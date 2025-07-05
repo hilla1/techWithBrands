@@ -77,7 +77,7 @@ export default function ReviewStep({
           onClick={nextStep}
           className="px-6 py-2 bg-gradient-to-r from-blue-400 to-orange-300 text-white rounded-md hover:opacity-90 transition font-medium w-full sm:w-auto"
         >
-          Proceed to Payment
+          Confirm & Proceed
         </button>
       </div>
     </div>

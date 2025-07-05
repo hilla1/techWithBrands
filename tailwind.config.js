@@ -6,10 +6,12 @@ export default {
   ],
   theme: {
     extend: {
-       backgroundImage: {
+      backgroundImage: {
         'solutions-bg': "url('/src/assets/bgSolutions.jpg')",
       },
     },
   },
-  plugins: [],
+  plugins: [
+    require('tailwind-scrollbar'),
+  ],
 }

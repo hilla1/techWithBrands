@@ -6,21 +6,12 @@ import { useAuth } from '../../../context/AuthContext';
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 
-// Check if the image is from Cloudinary
-const isCloudinaryUrl = (url) =>
-  url?.includes('res.cloudinary.com') && /\/([^/]+)\.\w+$/.test(url);
-
-// Extract publicId from Cloudinary image URL
-const extractPublicId = (url) => {
-  if (!isCloudinaryUrl(url)) return null;
-  const match = url.match(/\/([^/]+)\.\w+$/); // extract filename before extension
-  return match ? match[1] : null;
-};
-
 const EditProfileImage = ({ onChange, setUploading }) => {
   const { backend, user, refetch } = useAuth();
   const inputRef = useRef(null);
+
   const [preview, setPreview] = useState(user?.avatar || '');
+  const [publicId, setPublicId] = useState(user?.publicId || null);
   const [uploading, localSetUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [message, setMessage] = useState({
@@ -33,15 +24,13 @@ const EditProfileImage = ({ onChange, setUploading }) => {
     setUploading?.(val);
   };
 
-  // Deletes image from Cloudinary using extracted publicId
-  const deleteFromCloud = async (url) => {
-    if (!isCloudinaryUrl(url)) return;
-    const publicId = extractPublicId(url);
-    if (!publicId) return;
+  const deleteFromCloud = async (publicIdToDelete) => {
+    if (!publicIdToDelete) return;
+
     try {
       await axios.post(
         `${backend}/file/delete`,
-        { publicId },
+        { publicId: publicIdToDelete, resourceType: 'image' }, 
         {
           withCredentials: true,
           headers: { 'Content-Type': 'application/json' },
@@ -52,12 +41,11 @@ const EditProfileImage = ({ onChange, setUploading }) => {
     }
   };
 
-  // Updates the user's avatar in the database
-  const updateUserAvatar = async (avatarUrl) => {
+  const updateUserAvatar = async (avatarUrl, newPublicId = null) => {
     try {
       await axios.patch(
         `${backend}/user/update-profile`,
-        { avatar: avatarUrl },
+        { avatar: avatarUrl, publicId: newPublicId },
         { withCredentials: true }
       );
       refetch?.(); // refresh user context
@@ -66,7 +54,6 @@ const EditProfileImage = ({ onChange, setUploading }) => {
     }
   };
 
-  // Handles uploading a new file
   const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -95,11 +82,17 @@ const EditProfileImage = ({ onChange, setUploading }) => {
       const data = res.data;
       if (!data.success) throw new Error(data.message || 'Upload failed');
 
-      await deleteFromCloud(preview); // delete old image if from Cloudinary
+      // Delete previous image
+      await deleteFromCloud(publicId);
 
+      // Set new preview + publicId
       setPreview(data.url);
-      await updateUserAvatar(data.url);
+      setPublicId(data.publicId || null);
+
+      // Update backend
+      await updateUserAvatar(data.url, data.publicId);
       onChange?.(data.url);
+
       showMessage('success', '✅ Profile image updated!');
     } catch (err) {
       showMessage('error', err.response?.data?.message || err.message || 'Upload failed');
@@ -108,20 +101,21 @@ const EditProfileImage = ({ onChange, setUploading }) => {
     }
   };
 
-  // Handles removing the current avatar
   const handleRemove = async () => {
     try {
-      await deleteFromCloud(preview);
+      await deleteFromCloud(publicId);
       setPreview('');
-      await updateUserAvatar('');
+      setPublicId(null);
+
+      await updateUserAvatar('', null);
       onChange?.(null);
+
       showMessage('success', '✅ Profile image removed!');
     } catch (err) {
       showMessage('error', err.response?.data?.message || err.message || 'Delete failed');
     }
   };
 
-  // Shows feedback message
   const showMessage = (type, text) => {
     setMessage({ type, text });
     setTimeout(() => {

@@ -1,4 +1,11 @@
-import { createContext, useContext, useMemo, useCallback, useEffect, useState } from 'react';
+import {
+  createContext,
+  useContext,
+  useMemo,
+  useCallback,
+  useEffect,
+  useState,
+} from 'react';
 import useApi from '../hooks/useApi';
 
 const backend = import.meta.env.VITE_API_URL;
@@ -37,7 +44,6 @@ export const AuthProvider = ({ children }) => {
   });
 
   useEffect(() => {
-    // Call POST /auth/is-auth on mount
     checkAuthentication();
   }, [checkAuthentication]);
 
@@ -56,6 +62,8 @@ export const AuthProvider = ({ children }) => {
     await Promise.all([fetchUserData(), checkAuthentication()]);
   }, [fetchUserData, checkAuthentication]);
 
+  const [activeTab, setActiveTab] = useState('Dashboard');
+
   return (
     <AuthContext.Provider
       value={{
@@ -68,6 +76,8 @@ export const AuthProvider = ({ children }) => {
         checkAuthentication,
         refetch,
         backend,
+        activeTab,
+        setActiveTab,
       }}
     >
       {children}

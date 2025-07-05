@@ -33,7 +33,7 @@ export default function PaymentForm({ selectedPlan, onBack, onClose }) {
   ];
 
   return (
-    <div className="bg-white rounded-xl max-w-3xl mx-auto px-4 py-8 border border-gray-100 shadow-md">
+    <div className="bg-white rounded-xl mx-auto px-4 py-4 border border-gray-100 shadow-md">
       {/* Header */}
       <div className="text-center mb-6">
         <div className="flex items-center justify-center gap-3 mb-2">

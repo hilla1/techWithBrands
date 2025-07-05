@@ -1,20 +1,21 @@
 // src/components/Panel.jsx
-import React, { useState } from 'react';
+import React from 'react';
 import Wrapper from '../reusable/Wrapper';
 import DashboardTab from './tabs/DashboardTab';
 import ConsultationsTab from './tabs/ConsultationsTab';
 import ProjectsTab from './tabs/ProjectsTab';
 import ClientsTab from './tabs/ClientsTab';
 import Navbar from './Navbar';
+import { useAuth } from '../../context/AuthContext';
 
 const TABS = ['Dashboard', 'Consultations', 'Projects', 'Clients'];
 
 const Panel = () => {
-  const [activeTab, setActiveTab] = useState('Dashboard');
+  const { activeTab, setActiveTab } = useAuth(); 
 
   return (
     <section className="pt-12 md:pt-10 pb-6 bg-slate-50 min-h-screen">
-      <Navbar/>
+      <Navbar />
       <Wrapper>
         {/* Title and Description */}
         <div className="mb-6">

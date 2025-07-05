@@ -1,53 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { FiMoreVertical } from 'react-icons/fi';
+import { FaSpinner } from 'react-icons/fa';
+import { useAuth } from '../../../context/AuthContext';
 import ProjectDashboard from '../projectTabs/ProjectDashboard';
 import RequirementsModal from '../projectTabs/RequirementsModal';
+import EmptyProjectState from '../projectTabs/project/EmptyProjectState';
 
 const ProjectsTab = () => {
+  const { backend } = useAuth();
+  const [projects, setProjects] = useState([]);
   const [selectedProject, setSelectedProject] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterProgress, setFilterProgress] = useState('All');
-  const [isModalOpen, setIsModalOpen] = useState(false); 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const projects = [
-    {
-      id: 1,
-      title: 'Mobile App Redesign',
-      client: 'ABC Corp',
-      progress: 80,
-      status: 'active',
-      teamMembers: ["Sarah Chen (Lead Developer)", "Mike Johnson (UI/UX Designer)", "Emily Davis (Backend Developer)"]
-    },
-    {
-      id: 2,
-      title: 'E-commerce Setup',
-      client: 'XYZ Ltd',
-      progress: 45,
-      status: 'active',
-      teamMembers: ["Sarah Chen (Lead Developer)", "Mike Johnson (UI/UX Designer)"]
-    },
-    {
-      id: 3,
-      title: 'Website Launch',
-      client: 'FooBar Inc',
-      progress: 100,
-      status: 'completed',
-      teamMembers: ["Emily Davis (Backend Developer)"]
-    },
-    {
-      id: 4,
-      title: 'Marketing Campaign',
-      client: 'StartupX',
-      progress: 20,
-      status: 'active',
-      teamMembers: ["Mike Johnson (UI/UX Designer)", "Emily Davis (Backend Developer)"]
-    },
-  ];
+  const fetchProjects = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`${backend}/project`, {
+        withCredentials: true,
+      });
+      if (res.data?.success) {
+        setProjects(res.data.projects);
+      }
+    } catch (err) {
+      console.error('Failed to fetch projects:', err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProjects();
+  }, []);
 
   const filteredProjects = projects.filter((project) => {
     const matchesSearch =
-      project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      project.client.toLowerCase().includes(searchTerm.toLowerCase());
+      project.projectName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (project.client?.name?.toLowerCase() || '').includes(searchTerm.toLowerCase());
 
     let matchesProgress = true;
     if (filterProgress === 'Completed') matchesProgress = project.progress === 100;
@@ -68,8 +60,8 @@ const ProjectsTab = () => {
   if (selectedProject) {
     return (
       <div>
-        <ProjectDashboard 
-          project={selectedProject} 
+        <ProjectDashboard
+          project={selectedProject}
           onBackToProjects={handleBackToList}
         />
       </div>
@@ -78,6 +70,7 @@ const ProjectsTab = () => {
 
   return (
     <div>
+      {/* Filter & Actions */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
           <input
@@ -101,7 +94,7 @@ const ProjectsTab = () => {
 
         <div className="w-full md:w-auto">
           <button
-            onClick={() => setIsModalOpen(true)} // ✅ Open modal on click
+            onClick={() => setIsModalOpen(true)}
             className="w-full md:w-auto bg-gradient-to-r from-[#bfc9ff] to-[#ffe4c2] text-gray-800 px-6 py-2 rounded-md font-semibold hover:opacity-90 transition text-sm shadow-sm"
           >
             + Add New Project
@@ -109,11 +102,16 @@ const ProjectsTab = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {filteredProjects.length > 0 ? (
-          filteredProjects.map((project) => (
+      {/* Content */}
+      {loading ? (
+        <div className="flex justify-center items-center h-60">
+          <FaSpinner className="animate-spin text-3xl text-[#2E3191]" />
+        </div>
+      ) : filteredProjects.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {filteredProjects.map((project) => (
             <div
-              key={project.id}
+              key={project._id}
               onClick={() => handleProjectClick(project)}
               className="bg-white p-5 rounded-xl shadow-md hover:shadow-xl transition relative border border-gray-100 cursor-pointer hover:border-[#2E3191]"
             >
@@ -124,10 +122,11 @@ const ProjectsTab = () => {
               </div>
 
               <h3 className="text-lg font-semibold text-[#2E3191] mb-2">
-                {project.title}
+                {project.projectName}
               </h3>
               <p className="text-sm text-gray-500 mb-4">
-                <span className="font-medium text-gray-600">Client:</span> {project.client}
+                <span className="font-medium text-gray-600">Client:</span>{' '}
+                {project.client?.name || 'N/A'}
               </p>
 
               <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden mb-2">
@@ -139,16 +138,19 @@ const ProjectsTab = () => {
 
               <p className="text-sm text-gray-500">{project.progress}% Completed</p>
             </div>
-          ))
-        ) : (
-          <p className="text-center py-8 text-gray-500">No projects found.</p>
-        )}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <EmptyProjectState onCreateClick={() => setIsModalOpen(true)} />
+      )}
 
-      {/* ✅ Requirements Modal */}
+      {/* Create Project Modal */}
       <RequirementsModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false);
+          fetchProjects(); 
+        }}
       />
     </div>
   );
