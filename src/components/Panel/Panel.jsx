@@ -44,13 +44,13 @@ const Panel = () => {
 
         {/* Tabs */}
         <div className="mb-6">
-          {/* Mobile View: Custom 3-tab layout */}
+          {/* Mobile View: 3-Fit Responsive Tabs */}
           <div className="flex sm:hidden gap-2">
             {visibleTabs.map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`flex-1 px-2 py-2 text-xs font-medium rounded-md text-ellipsis whitespace-nowrap overflow-hidden text-center transition
+                className={`flex-1 min-w-0 px-2 py-2 text-sm font-medium rounded-md text-ellipsis whitespace-nowrap overflow-hidden text-center transition
                   ${
                     activeTab === tab
                       ? 'bg-gradient-to-r from-[#2E3191] to-[#F89F2D] text-white'
@@ -62,7 +62,7 @@ const Panel = () => {
             ))}
           </div>
 
-          {/* Tablet/Desktop View: Original look */}
+          {/* Desktop & Tablet View: Original Style */}
           <div className="hidden sm:flex flex-wrap gap-2">
             {visibleTabs.map((tab) => (
               <button
