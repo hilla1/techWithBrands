@@ -31,7 +31,6 @@ const DashboardTab = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
 
-  // Fetch consultations & projects when component mounts
   useEffect(() => {
     fetchConsultations?.();
     fetchProjects?.();
@@ -47,12 +46,12 @@ const DashboardTab = () => {
   );
   const totalConsultations = consultations.length;
 
-  // AUnique Clients Calculation
+  // Correct Total Clients from consultations.user._id & projects.client._id
   let totalClients = 0;
   if (user?.role === 'admin' || user?.role === 'consultant') {
     const consultationUserIds = consultations.map((c) => c.user?._id?.toString());
-    const projectUserIds = projects.map((p) => p.user?._id?.toString());
-    const allUserIds = new Set([...consultationUserIds, ...projectUserIds].filter(Boolean));
+    const projectClientIds = projects.map((p) => p.client?._id?.toString());
+    const allUserIds = new Set([...consultationUserIds, ...projectClientIds].filter(Boolean));
     totalClients = allUserIds.size;
   }
 
@@ -92,12 +91,12 @@ const DashboardTab = () => {
 
   const uniqueUsersThisWeek = new Set([
     ...consultationsThisWeek.map((c) => c.user?._id?.toString()),
-    ...projectsThisWeek.map((p) => p.user?._id?.toString()),
+    ...projectsThisWeek.map((p) => p.client?._id?.toString()),
   ]);
 
   const uniqueUsersLastWeek = new Set([
     ...consultationsLastWeek.map((c) => c.user?._id?.toString()),
-    ...projectsLastWeek.map((p) => p.user?._id?.toString()),
+    ...projectsLastWeek.map((p) => p.client?._id?.toString()),
   ]);
 
   const calculateChange = (current, previous) => {
@@ -212,14 +211,17 @@ const DashboardTab = () => {
           fetchConsultations={fetchConsultations}
           loading={consultationsLoading}
         />
-        <ProjectOverview
-          projects={projects}
-          loading={projectsLoading}
-          animation={futuristicAnimation}
-          onCreateClick={() => setIsModalOpen(true)}
-          onViewMoreClick={() => setActiveTab('Projects')}
-          onProjectClick={handleProjectClick}
-        />
+        <div className="overflow-hidden">
+          <ProjectOverview
+            projects={projects} 
+            loading={projectsLoading}
+            animation={futuristicAnimation}
+            onCreateClick={() => setIsModalOpen(true)}
+            onViewMoreClick={() => setActiveTab('Projects')}
+            onProjectClick={handleProjectClick}
+            setActiveTab={setActiveTab}
+          />
+        </div>
       </div>
 
       {/* Stat Cards */}

@@ -43,20 +43,42 @@ const Panel = () => {
         </div>
 
         {/* Tabs */}
-        <div className="flex flex-wrap gap-2 mb-6">
-          {visibleTabs.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 font-semibold rounded-lg whitespace-nowrap ${
-                activeTab === tab
-                  ? 'bg-gradient-to-r from-[#2E3191] to-[#F89F2D] text-white'
-                  : 'bg-white text-[#2E3191] border border-[#F89F2D]'
-              } hover:shadow-md transition`}
-            >
-              {tab}
-            </button>
-          ))}
+        <div className="mb-6">
+          {/* Mobile View: Custom 3-tab layout */}
+          <div className="flex sm:hidden gap-2">
+            {visibleTabs.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`flex-1 px-2 py-2 text-xs font-medium rounded-md text-ellipsis whitespace-nowrap overflow-hidden text-center transition
+                  ${
+                    activeTab === tab
+                      ? 'bg-gradient-to-r from-[#2E3191] to-[#F89F2D] text-white'
+                      : 'bg-white text-[#2E3191] border border-[#F89F2D]'
+                  }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+
+          {/* Tablet/Desktop View: Original look */}
+          <div className="hidden sm:flex flex-wrap gap-2">
+            {visibleTabs.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-4 py-2 font-semibold rounded-lg whitespace-nowrap transition
+                  ${
+                    activeTab === tab
+                      ? 'bg-gradient-to-r from-[#2E3191] to-[#F89F2D] text-white'
+                      : 'bg-white text-[#2E3191] border border-[#F89F2D]'
+                  } hover:shadow-md`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Tab Content */}

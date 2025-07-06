@@ -116,10 +116,10 @@ const UpcomingConsultationList = ({
           </ul>
 
           {consultations.length > 3 && (
-            <div className="flex justify-center mt-4">
+            <div className="flex justify-center mt-4 md:mt-6">
               <button
                 onClick={() => setActiveTab('Consultations')}
-                className="text-sm text-[#2E3191] font-medium hover:underline"
+                className="text-sm font-semibold bg-clip-text text-transparent bg-gradient-to-r from-[#F89F2D] to-[#2E3191] hover:underline transition"
               >
                 Show More
               </button>

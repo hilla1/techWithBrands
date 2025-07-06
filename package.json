@@ -27,6 +27,7 @@
     "date-fns": "^3.6.0",
     "date-fns-tz": "^3.2.0",
     "dotenv": "^16.4.5",
+    "file-saver": "^2.0.5",
     "framer-motion": "^11.18.2",
     "js-cookie": "^3.0.5",
     "jspdf": "^2.5.1",
@@ -62,6 +63,7 @@
     "socket.io-client": "^4.8.1",
     "tailwind-scrollbar": "^2.0.0",
     "use-debounce": "^10.0.4",
+    "xlsx": "^0.18.5",
     "zod": "^3.23.8"
   },
   "devDependencies": {

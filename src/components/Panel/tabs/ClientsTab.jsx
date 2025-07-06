@@ -1,5 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { FiMoreVertical } from 'react-icons/fi';
+import { FiMoreVertical, FiDownload } from 'react-icons/fi';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 import { useAuth } from '../../../context/AuthContext';
 
 const ClientsTab = () => {
@@ -10,28 +12,52 @@ const ClientsTab = () => {
   const uniqueClients = useMemo(() => {
     const map = new Map();
 
-    [...projects, ...consultations].forEach((item) => {
-      const user = item.user;
+    // Process projects
+    projects.forEach((project) => {
+      const user = project.client;
       if (!user?._id) return;
 
       if (!map.has(user._id)) {
         map.set(user._id, {
           ...user,
           hasActiveProject: false,
+          projectsInfo: [],
           hasScheduledConsultation: false,
+          consultationDates: [],
         });
       }
 
       const existing = map.get(user._id);
-
-      if ('progress' in item && item.progress > 0 && item.progress < 100) {
+      existing.projectsInfo.push(`${project.projectName} – ${project.projectType}`);
+      if (project.progress > 0 && project.progress < 100) {
         existing.hasActiveProject = true;
       }
 
-      if (
-        'status' in item &&
-        ['scheduled', 'rescheduled'].includes(item.status?.toLowerCase())
-      ) {
+      map.set(user._id, existing);
+    });
+
+    // Process consultations
+    consultations.forEach((consult) => {
+      const user = consult.user;
+      if (!user?._id) return;
+
+      if (!map.has(user._id)) {
+        map.set(user._id, {
+          ...user,
+          hasActiveProject: false,
+          projectsInfo: [],
+          hasScheduledConsultation: false,
+          consultationDates: [],
+        });
+      }
+
+      const existing = map.get(user._id);
+      if (consult.timeSlot) {
+        const cleanSlot = consult.timeSlot.split('GMT')[0].trim();
+        existing.consultationDates.push(cleanSlot);
+      }
+
+      if (['scheduled', 'rescheduled'].includes(consult.status?.toLowerCase())) {
         existing.hasScheduledConsultation = true;
       }
 
@@ -49,9 +75,7 @@ const ClientsTab = () => {
 
   const filteredClients = uniqueClients.filter((client) => {
     const matchesSearch = client.name?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus =
-      filterStatus === 'All' || client.status === filterStatus;
-
+    const matchesStatus = filterStatus === 'All' || client.status === filterStatus;
     return matchesSearch && matchesStatus;
   });
 
@@ -60,22 +84,43 @@ const ClientsTab = () => {
     return parts.map((n) => n[0]?.toUpperCase()).slice(0, 2).join('');
   };
 
+  const exportToExcel = () => {
+    const exportData = filteredClients.map((client) => ({
+      Name: client.name,
+      Email: client.email,
+      Phone: client.phone || '—',
+      Status: client.status,
+      Projects: client.projectsInfo?.join(', ') || '—',
+      Consultations: client.consultationDates?.join(', ') || '—',
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Clients');
+
+    const buffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+    saveAs(blob, `Clients_${new Date().toISOString().slice(0, 10)}.xlsx`);
+  };
+
   return (
     <div className="bg-white p-4 sm:p-6 rounded-xl shadow w-full overflow-hidden">
-      {/* Header & Filters */}
+      {/* Filters + Export */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
           <input
             type="text"
             placeholder="Search clients..."
-            className="rounded-md px-4 py-2 text-sm bg-gradient-to-r from-[#f1f1f1] to-[#e4e4ff] text-gray-700 placeholder-gray-500 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2E3191] w-full sm:w-64"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            className="rounded-md px-4 py-2 text-sm bg-gradient-to-r from-[#f1f1f1] to-[#e4e4ff] text-gray-700 placeholder-gray-500 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2E3191] w-full sm:w-64"
           />
           <select
-            className="rounded-md px-4 py-2 text-sm bg-gradient-to-r from-[#f1f1f1] to-[#e4e4ff] text-gray-700 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2E3191]"
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
+            className="rounded-md px-4 py-2 text-sm bg-gradient-to-r from-[#f1f1f1] to-[#e4e4ff] text-gray-700 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2E3191]"
           >
             <option value="All">All Status</option>
             <option value="Active">Active</option>
@@ -83,11 +128,13 @@ const ClientsTab = () => {
           </select>
         </div>
 
-        <div className="w-full md:w-auto">
-          <button className="w-full md:w-auto bg-gradient-to-r from-[#bfc9ff] to-[#ffe4c2] text-gray-800 px-6 py-2 rounded-md font-semibold hover:opacity-90 transition text-sm shadow-sm">
-            + Add New Client
-          </button>
-        </div>
+        <button
+          onClick={exportToExcel}
+          className="w-full md:w-auto bg-gradient-to-r from-[#bfc9ff] to-[#ffe4c2] text-[#2E3191] px-4 py-2 rounded-md font-semibold hover:opacity-90 transition text-sm shadow-sm flex items-center justify-center gap-2"
+        >
+          <FiDownload size={18} />
+          Export to Excel
+        </button>
       </div>
 
       {/* Desktop Table */}
@@ -98,6 +145,8 @@ const ClientsTab = () => {
               <th className="px-4 py-2 border-b text-left">Client</th>
               <th className="px-4 py-2 border-b text-left">Phone</th>
               <th className="px-4 py-2 border-b text-left">Email</th>
+              <th className="px-4 py-2 border-b text-left">Projects</th>
+              <th className="px-4 py-2 border-b text-left">Consultations</th>
               <th className="px-4 py-2 border-b text-left">Status</th>
               <th className="px-4 py-2 border-b text-center">Actions</th>
             </tr>
@@ -119,6 +168,16 @@ const ClientsTab = () => {
                   <td className="px-4 py-2">{client.phone || '—'}</td>
                   <td className="px-4 py-2">{client.email}</td>
                   <td className="px-4 py-2">
+                    {client.projectsInfo?.length > 0
+                      ? client.projectsInfo.join(', ')
+                      : '—'}
+                  </td>
+                  <td className="px-4 py-2">
+                    {client.consultationDates?.length > 0
+                      ? client.consultationDates.join(', ')
+                      : '—'}
+                  </td>
+                  <td className="px-4 py-2">
                     <span
                       className={`inline-block px-2 py-1 text-xs rounded-full font-semibold ${
                         client.status === 'Active'
@@ -138,7 +197,7 @@ const ClientsTab = () => {
               ))
             ) : (
               <tr>
-                <td colSpan="5" className="text-center py-6 text-gray-500">
+                <td colSpan="7" className="text-center py-6 text-gray-500">
                   No clients found.
                 </td>
               </tr>
@@ -147,7 +206,7 @@ const ClientsTab = () => {
         </table>
       </div>
 
-      {/* Mobile Card View */}
+      {/* Mobile View */}
       <div className="md:hidden grid gap-4">
         {filteredClients.length > 0 ? (
           filteredClients.map((client) => (
@@ -172,6 +231,12 @@ const ClientsTab = () => {
               </div>
               <p className="text-sm text-gray-600">📧 {client.email}</p>
               <p className="text-sm text-gray-600">📱 {client.phone || '—'}</p>
+              <p className="text-sm text-gray-600">
+                🛠️ {client.projectsInfo?.join(', ') || 'No projects'}
+              </p>
+              <p className="text-sm text-gray-600">
+                🗓️ {client.consultationDates?.join(', ') || 'No consultations'}
+              </p>
               <span
                 className={`w-fit px-2 py-1 mt-2 text-xs rounded-full font-semibold ${
                   client.status === 'Active'
