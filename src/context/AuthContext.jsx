@@ -48,6 +48,19 @@ export const AuthProvider = ({ children }) => {
     checkAuthentication();
   }, [checkAuthentication]);
 
+  // 🆕 Run prompt only once per session
+  useEffect(() => {
+    const promptKey = 'cookie_prompt_shown';
+
+    if (!sessionStorage.getItem(promptKey)) {
+      // Run your prompt logic here (e.g., a modal, toast, console log, etc.)
+      alert('This site uses cookies to enhance your experience.');
+      
+      // Mark prompt as shown
+      sessionStorage.setItem(promptKey, 'true');
+    }
+  }, []);
+
   const user = useMemo(() => userDataResponse?.userData ?? null, [userDataResponse]);
   const role = useMemo(() => authResponse?.role ?? null, [authResponse]);
 
